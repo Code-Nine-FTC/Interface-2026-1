@@ -29,13 +29,19 @@ export const theme = {
 
     dark: {
         background: {
-            primary: "#454545",
-            secondary: "#1E1E1E",
+            primary: "#1E1E1E", // Cor de fundo principal escura
+            secondary: "#2D2D2D",
+            textBox: "#454545",
         },
         text: {
-            primary: "#EFEFEF",
+            primary: "#EFEFEF", // Texto claro no modo escuro
             secondary: "#FAFAFA",
             light: "#868686",
+        },
+        orange: {
+            main: "#FF8A24",
+            secondary: "#CF690F",
+            light: "#F9CAA2",
         },
     },
 
@@ -44,23 +50,22 @@ export const theme = {
     },
 };
 
-
 function flattenObject(obj: any, prefix = ""): Record<string, string> {
-    return Object.keys(obj).reduce((acc, key) => {
+    const acc: Record<string, string> = {};
+    for (const key in obj) {
         const value = obj[key];
         const newKey = prefix ? `${prefix}-${key}` : key;
-
-        if (typeof value === "object") {
+        if (typeof value === "object" && value !== null) {
             Object.assign(acc, flattenObject(value, newKey));
         } else {
             acc[`--${newKey}`] = value;
         }
-
-        return acc;
-    }, {} as Record<string, string>);
+    }
+    return acc;
 }
 
 export function applyThemeVariables(mode: "light" | "dark") {
+    if (typeof window === "undefined") return;
     const root = document.documentElement;
 
     const mergedTheme = {
@@ -70,7 +75,6 @@ export function applyThemeVariables(mode: "light" | "dark") {
     };
 
     const vars = flattenObject(mergedTheme);
-
     Object.entries(vars).forEach(([key, value]) => {
         root.style.setProperty(key, value);
     });

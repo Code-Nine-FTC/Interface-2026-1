@@ -1,0 +1,75 @@
+.wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* quando quiser ocupar tudo */
+.wrapper[data-full="true"] {
+    display: block;
+    width: 100%;
+}
+
+/* conteúdo real */
+.content {
+    display: inherit;
+}
+
+/* esconde sem quebrar layout */
+.wrapper[data-loading="true"] .content {
+    opacity: 0;
+}
+
+/* skeleton overlay */
+.skeleton {
+    position: absolute;
+    inset: 0;
+
+    border-radius: 0.5rem;
+    background: var(--orange-light);
+    opacity: 0.35;
+
+    pointer-events: none;
+    overflow: hidden;
+
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+/* variantes */
+.text {
+    border-radius: 0.3rem;
+}
+
+.rectangular {
+    border-radius: 0.7rem;
+}
+
+/* shimmer */
+.skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.18) 48%,
+            rgba(255, 255, 255, 0.28) 50%,
+            rgba(255, 255, 255, 0.18) 70%,
+            transparent 100%
+    );
+
+    filter: blur(6px);
+    animation: shimmer 2.8s infinite;
+}
+
+/* animações */
+@keyframes shimmer {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(120%); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.28; }
+    50% { opacity: 0.45; }
+    100% { opacity: 0.28; }
+}
