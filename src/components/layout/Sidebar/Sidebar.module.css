@@ -1,0 +1,55 @@
+.sidebar {
+    width: 25%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 2%;
+    box-sizing: border-box;
+
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+}
+
+.logoContainer {
+    margin-bottom: 15%;
+}
+
+.logoContainer img {
+    width: 100%;
+    max-width: 180px;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 15%;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    gap: 4%;
+
+    font-size: var(--font-size-md);
+    color: var(--text-secondary);
+
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.link img {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.link:hover {
+    opacity: 0.7;
+    color: var(--text-primary);
+}
+
+.link.active {
+    color: var(--orange-main);
+    font-weight: 500;
+}
