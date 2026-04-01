@@ -29,12 +29,12 @@ export const theme = {
 
     dark: {
         background: {
-            primary: "#1E1E1E", // Cor de fundo principal escura
+            primary: "#1E1E1E", 
             secondary: "#2D2D2D",
             textBox: "#454545",
         },
         text: {
-            primary: "#EFEFEF", // Texto claro no modo escuro
+            primary: "#EFEFEF", 
             secondary: "#FAFAFA",
             light: "#868686",
         },
