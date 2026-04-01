@@ -17,7 +17,6 @@ export default function Navbar() {
         setTimeout(() => setIsSpinning(false), 600);
     };
 
-    // ☀️ LIGHT MODE ICON (lucide style)
     const SunLightIcon = () => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -44,7 +43,6 @@ export default function Navbar() {
         </svg>
     );
 
-    // 🌑 DARK MODE ICON (o seu atual)
     const SunDimIcon = () => (
         <svg
             width="24"
