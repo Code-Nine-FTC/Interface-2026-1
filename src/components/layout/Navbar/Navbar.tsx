@@ -4,7 +4,11 @@ import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
 
-export default function Navbar() {
+type NavbarProps = {
+    pageTitle?: string;
+};
+
+export default function Navbar({ pageTitle }: NavbarProps) {
     const { theme, toggleTheme, mode } = useTheme();
     const { isLoading } = useLoading();
 
@@ -93,7 +97,7 @@ export default function Navbar() {
                             fontSize: theme.font?.size?.lg,
                         }}
                     >
-                        Título do Chat
+                        {pageTitle || "Título"}
                     </h1>
                 </Skeleton>
 
