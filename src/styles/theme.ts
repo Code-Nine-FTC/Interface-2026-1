@@ -19,6 +19,7 @@ export const theme = {
         text: {
             primary: "#535353",
             secondary: "#868686",
+            light: "#646464" ,
         },
         orange: {
             main: "#FF8A24",
@@ -36,7 +37,7 @@ export const theme = {
         text: {
             primary: "#EFEFEF", 
             secondary: "#FAFAFA",
-            light: "#868686",
+            light: "#d3d3d3",
         },
         orange: {
             main: "#FF8A24",
