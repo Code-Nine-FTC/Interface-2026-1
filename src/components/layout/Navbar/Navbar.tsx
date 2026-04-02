@@ -3,6 +3,7 @@ import styles from "./Navbar.module.css";
 import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
+import { useTitle } from "../../../context/TitleContext";
 
 export default function Navbar() {
     const { theme, toggleTheme, mode } = useTheme();
@@ -16,7 +17,6 @@ export default function Navbar() {
         setTimeout(() => setIsSpinning(false), 600);
     };
 
-    // ☀️ LIGHT MODE ICON (lucide style)
     const SunLightIcon = () => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -43,7 +43,6 @@ export default function Navbar() {
         </svg>
     );
 
-    // 🌑 DARK MODE ICON (o seu atual)
     const SunDimIcon = () => (
         <svg
             width="24"
@@ -77,6 +76,8 @@ export default function Navbar() {
         </svg>
     );
 
+    const { title } = useTitle();
+    
     return (
         <header
             className={styles.container}
@@ -93,7 +94,7 @@ export default function Navbar() {
                             fontSize: theme.font?.size?.lg,
                         }}
                     >
-                        Título do Chat
+                        {title}
                     </h1>
                 </Skeleton>
 

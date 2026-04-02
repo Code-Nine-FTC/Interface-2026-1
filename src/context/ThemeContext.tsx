@@ -6,7 +6,6 @@ type ThemeType = "light" | "dark";
 const ThemeContext = createContext<any>(null);
 
 export function ThemeProvider({ children }: any) {
-    // Tenta pegar o tema salvo no navegador ou usa light por padrão
     const [mode, setMode] = useState<ThemeType>("light");
 
     useEffect(() => {
