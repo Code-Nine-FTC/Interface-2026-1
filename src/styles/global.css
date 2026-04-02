@@ -5,6 +5,8 @@
     --font-family: 'Poppins', sans-serif;
     --background-primary: #FFFFFF;
     --text-primary: #535353;
+    --primary-color: #FF8A24;
+    --primary-color-dark: #CF690F;
 }
 
 * {
