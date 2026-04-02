@@ -19,6 +19,7 @@ export const theme = {
         text: {
             primary: "#535353",
             secondary: "#868686",
+            light: "#646464" ,
         },
         orange: {
             main: "#FF8A24",
@@ -29,14 +30,14 @@ export const theme = {
 
     dark: {
         background: {
-            primary: "#1E1E1E", // Cor de fundo principal escura
+            primary: "#1E1E1E", 
             secondary: "#2D2D2D",
             textBox: "#454545",
         },
         text: {
-            primary: "#EFEFEF", // Texto claro no modo escuro
+            primary: "#EFEFEF", 
             secondary: "#FAFAFA",
-            light: "#868686",
+            light: "#d3d3d3",
         },
         orange: {
             main: "#FF8A24",

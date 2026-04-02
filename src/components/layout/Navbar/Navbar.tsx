@@ -3,6 +3,7 @@ import styles from "./Navbar.module.css";
 import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
+import { useTitle } from "../../../context/TitleContext";
 
 type NavbarProps = {
     pageTitle?: string;
@@ -20,7 +21,6 @@ export default function Navbar({ pageTitle }: NavbarProps) {
         setTimeout(() => setIsSpinning(false), 600);
     };
 
-    // ☀️ LIGHT MODE ICON (lucide style)
     const SunLightIcon = () => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +47,6 @@ export default function Navbar({ pageTitle }: NavbarProps) {
         </svg>
     );
 
-    // 🌑 DARK MODE ICON (o seu atual)
     const SunDimIcon = () => (
         <svg
             width="24"
@@ -81,6 +80,8 @@ export default function Navbar({ pageTitle }: NavbarProps) {
         </svg>
     );
 
+    const { title } = useTitle();
+    
     return (
         <header
             className={styles.container}
