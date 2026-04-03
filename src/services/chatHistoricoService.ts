@@ -14,5 +14,7 @@ export async function buscarHistoricoChat(chat_id: string): Promise<MensagemHist
   if (!response.ok) {
     throw new Error("Erro ao buscar histórico do chat");
   }
-  return response.json();
+  const data = await response.json();
+  console.log("Histórico do chat:", data);
+  return data;
 }
