@@ -82,12 +82,8 @@ export default function Chatbot() {
     const [chatId, setChatId] = useState<string | null>(null);
     const chatRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
-    const possuiGeometriaDeArea = Boolean(
-        dadosMapa?.features?.some((f) => {
-            const tipo = f?.geometry?.type;
-            return tipo === "Polygon" || tipo === "MultiPolygon";
-        })
-    );
+    const possuiGeoJson = Boolean(dadosMapa?.features?.length);
+    const geoJsonParaRenderizar = possuiGeoJson ? dadosMapa : null;
     const queimadasLocalizacoes = dadosMapa?.features
         ?.map((f) => {
             const coord = coordenadaDoFeature(f);
@@ -318,9 +314,9 @@ export default function Chatbot() {
                             <div className={styles.mapContainer}>
                                 <MapComponent
                                     poluicaoLocalizacoes={[]}
-                                    queimadasLocalizacoes={possuiGeometriaDeArea ? [] : queimadasLocalizacoes}
+                                    queimadasLocalizacoes={possuiGeoJson ? [] : queimadasLocalizacoes}
                                     quilombosLocalizacoes={[]}
-                                    geoJsonData={dadosMapa}
+                                    geoJsonData={geoJsonParaRenderizar}
                                 />
                             </div>
                         )}

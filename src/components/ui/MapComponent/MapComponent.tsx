@@ -52,6 +52,58 @@ function FitGeoJsonBounds({ data }: { data: Mapa }) {
   return null;
 }
 
+function getGeoJsonStyle(feature: any) {
+  const geometryType = feature?.geometry?.type;
+
+  if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') {
+    return {
+      color: '#d35400',
+      weight: 2,
+      opacity: 1,
+      fillColor: '#f39c12',
+      fillOpacity: 0.25,
+    };
+  }
+
+  if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
+    return {
+      color: '#2980b9',
+      weight: 3,
+      opacity: 0.9,
+    };
+  }
+
+  return {
+    color: '#7f8c8d',
+    weight: 2,
+    opacity: 0.8,
+  };
+}
+
+function pointToLayer(feature: any, latlng: L.LatLng) {
+  const rawIntensidade = feature?.properties?.intensidade;
+  const intensidade = typeof rawIntensidade === 'number' && Number.isFinite(rawIntensidade) ? rawIntensidade : null;
+  const radius = intensidade ? Math.max(5, Math.min(14, 5 + intensidade / 40)) : 6;
+
+  return L.circleMarker(latlng, {
+    radius,
+    color: '#c0392b',
+    weight: 1,
+    fillColor: '#e74c3c',
+    fillOpacity: 0.75,
+  });
+}
+
+function bindFeaturePopup(feature: any, layer: L.Layer) {
+  const properties = (feature?.properties ?? {}) as Record<string, unknown>;
+  const nome = String(properties.nome ?? properties.municipio ?? 'Sem nome');
+  const tipo = String(properties.tipo ?? 'Geometria');
+  const intensidade = typeof properties.intensidade === 'number' ? `<br/>Intensidade: ${properties.intensidade}` : '';
+  const fase = properties.fase ? `<br/>Fase: ${String(properties.fase)}` : '';
+
+  layer.bindPopup(`<strong>${nome}</strong><br/>Tipo: ${tipo}${intensidade}${fase}`);
+}
+
 const poluicaoIcon = L.divIcon({
   html: '<div style="background-color: #9b59b6; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">🌍</div>',
   className: '',
@@ -91,20 +143,9 @@ export default function MapComponent({
             <FitGeoJsonBounds data={geoJsonData} />
             <GeoJSON
               data={geoJsonData as any}
-              style={() => ({
-                color: '#d35400',
-                weight: 2,
-                opacity: 1,
-                fillColor: '#f39c12',
-                fillOpacity: 0.25,
-              })}
-              onEachFeature={(feature, layer) => {
-                const properties = (feature?.properties ?? {}) as Record<string, unknown>;
-                const nome = String(properties.nome ?? properties.municipio ?? 'Sem nome');
-                const tipo = String(properties.tipo ?? 'Área');
-                const fase = properties.fase ? `<br/>Fase: ${String(properties.fase)}` : '';
-                layer.bindPopup(`<strong>${nome}</strong><br/>Tipo: ${tipo}${fase}`);
-              }}
+              style={getGeoJsonStyle}
+              pointToLayer={pointToLayer}
+              onEachFeature={bindFeaturePopup}
             />
           </>
         )}
@@ -130,6 +171,7 @@ export default function MapComponent({
         </LayerGroup>
         <LayerGroup>
           {queimadasLocalizacoes.map((localizacao, idx) => {
+            if (hasGeoJson) return null;
             if (!isValidLatLng(localizacao.lat, localizacao.lng)) return null;
 
             return (
