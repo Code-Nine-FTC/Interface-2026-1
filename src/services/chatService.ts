@@ -1,4 +1,4 @@
-// src/services/chatService.ts
+
 
 export interface ChatMensagemRequest {
   pergunta: string;
@@ -56,5 +56,7 @@ export async function enviarMensagemChat(
   if (!response.ok) {
     throw new Error("Erro ao enviar mensagem para o backend");
   }
-  return response.json();
+  const data = await response.json();
+  console.log("Retorno do backend:", data);
+  return data;
 }
