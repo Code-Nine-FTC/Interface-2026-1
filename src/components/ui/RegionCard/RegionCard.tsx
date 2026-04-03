@@ -101,7 +101,7 @@ export default function RegionCard({ data }: Props) {
                 </div>
 
                 <div className={styles.metric}>
-                    <span>Risco:</span>
+                    <span>Risco de queimadas:</span>
                     <div className={styles.bar}>
                         <div
                             className={styles.fill}
