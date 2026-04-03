@@ -42,7 +42,7 @@ export const theme = {
         orange: {
             main: "#FF8A24",
             secondary: "#CF690F",
-            light: "#F9CAA2",
+            light: "#FFEBD9",
         },
     },
 

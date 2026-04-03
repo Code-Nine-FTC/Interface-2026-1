@@ -13,14 +13,14 @@
 .title {
     color: var(--text-light);
     font-size: var(--font-size-lg);
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 .indicators {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
 .indicator {
