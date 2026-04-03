@@ -2,17 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
 import styles from "./Chatbot.module.css";
+import { enviarMensagemChat, ChatMensagemResponse, FonteCitada, Mapa } from "../../services/chatService";
 
 interface Mensagem {
     id: string;
     texto: string;
     tipo: "usuario" | "bot";
     autor?: string;
-    dados?: {
-        poluicao?: Array<{ lat: number; lng: number; valor: number; local: string }>;
-        queimadas?: Array<{ lat: number; lng: number; casos: number; local: string }>;
-        quilombos?: Array<{ lat: number; lng: number; status: string; local: string }>;
-    };
+    fontes?: FonteCitada[];
+    mapa?: Mapa;
 }
 
 export default function Chatbot() {
@@ -23,11 +21,8 @@ export default function Chatbot() {
     const [digitando, setDigitando] = useState(false);
     const [chatIniciado, setChatIniciado] = useState(false);
     const [exitandoWelcome, setExitandoWelcome] = useState(false);
-    const [dadosMapa, setDadosMapa] = useState({
-        poluicao: [] as any[],
-        queimadas: [] as any[],
-        quilombos: [] as any[]
-    });
+    const [dadosMapa, setDadosMapa] = useState<Mapa | null>(null);
+    const [chatId, setChatId] = useState<string | null>(null);
     const chatRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -55,73 +50,38 @@ export default function Chatbot() {
         setInput("");
         setDigitando(true);
 
-        setTimeout(() => {
-            const respostaBot = processarMensagem(input);
-            respostaBot.autor = "Atlas";
-            setMensagens(prev => [...prev, respostaBot]);
+        try {
+            const resposta: ChatMensagemResponse = await enviarMensagemChat(input, chatId);
+            setChatId(resposta.chat_id);
+            const mensagemBot: Mensagem = {
+                id: resposta.resposta_id,
+                texto: resposta.texto_resposta,
+                tipo: "bot",
+                autor: "Atlas",
+                fontes: resposta.fontes_citadas,
+                mapa: resposta.mapa
+            };
+            setMensagens(prev => [...prev, mensagemBot]);
             setDigitando(false);
-
-            if (respostaBot.dados) {
+            if (resposta.mapa) {
                 setMostrarMapa(true);
-                setDadosMapa({
-                    poluicao: respostaBot.dados.poluicao || [],
-                    queimadas: respostaBot.dados.queimadas || [],
-                    quilombos: respostaBot.dados.quilombos || []
-                });
+                setDadosMapa(resposta.mapa);
+            } else {
+                setMostrarMapa(false);
+                setDadosMapa(null);
             }
-        }, 1200);
+        } catch (error: any) {
+            setMensagens(prev => [...prev, {
+                id: Date.now().toString(),
+                texto: "Erro ao consultar o backend. Tente novamente.",
+                tipo: "bot",
+                autor: "Atlas"
+            }]);
+            setDigitando(false);
+        }
     };
 
-    const processarMensagem = (texto: string): Mensagem => {
-        if (texto.toLowerCase().includes("queimada")) {
-            return {
-                id: Date.now().toString(),
-                texto: "Aqui estão os dados de queimadas detectadas em SP:",
-                tipo: "bot",
-                dados: {
-                    queimadas: [
-                        { lat: -23.5505, lng: -46.6333, casos: 5, local: "São Paulo" },
-                        { lat: -22.9068, lng: -43.1729, casos: 3, local: "Rio de Janeiro" },
-                        { lat: -23.2237, lng: -49.6492, casos: 7, local: "Maringá" }
-                    ]
-                }
-            };
-        }
-
-        if (texto.toLowerCase().includes("poluição")) {
-            return {
-                id: Date.now().toString(),
-                texto: "Monitorando poluição em São Paulo. Veja no mapa:",
-                tipo: "bot",
-                dados: {
-                    poluicao: [
-                        { lat: -23.5505, lng: -46.6333, valor: 85, local: "Centro SP" },
-                        { lat: -23.6345, lng: -46.7325, valor: 72, local: "Zona Leste" }
-                    ]
-                }
-            };
-        }
-
-        if (texto.toLowerCase().includes("quilombo")) {
-            return {
-                id: Date.now().toString(),
-                texto: "Quilombos registrados no estado:",
-                tipo: "bot",
-                dados: {
-                    quilombos: [
-                        { lat: -23.4, lng: -46.4, status: "ativo", local: "Quilombo A" },
-                        { lat: -23.7, lng: -46.8, status: "ativo", local: "Quilombo B" }
-                    ]
-                }
-            };
-        }
-
-        return {
-            id: Date.now().toString(),
-            texto: "Digite 'queimadas', 'poluição' ou 'quilombo' para ver dados no mapa!",
-            tipo: "bot"
-        };
-    };
+    // Removido processarMensagem pois agora a resposta vem do backend
 
     return (
         <div
@@ -173,6 +133,19 @@ export default function Chatbot() {
                                     )}
                                     <div className={styles.messageContent}>
                                         {msg.texto}
+                                        {/* Exibe fontes citadas se houver */}
+                                        {msg.fontes && msg.fontes.length > 0 && (
+                                            <div className={styles.fontesCitadas}>
+                                                <strong>Fontes consultadas:</strong>
+                                                <ul>
+                                                    {msg.fontes.map((fonte, idx) => (
+                                                        <li key={idx}>
+                                                            <a href={fonte.url} target="_blank" rel="noopener noreferrer">{fonte.nome}</a> ({fonte.orgao})
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -211,12 +184,17 @@ export default function Chatbot() {
                         </button>
                     </div>
                 </div>
-                    {mostrarMapa && (
+                    {mostrarMapa && dadosMapa && (
                         <div className={styles.mapContainer}>
                             <MapComponent
-                                poluicaoLocalizacoes={dadosMapa.poluicao}
-                                queimadasLocalizacoes={dadosMapa.queimadas}
-                                quilombosLocalizacoes={dadosMapa.quilombos}
+                                poluicaoLocalizacoes={[]}
+                                queimadasLocalizacoes={dadosMapa.features?.map(f => ({
+                                    lat: f.geometry.coordinates[1],
+                                    lng: f.geometry.coordinates[0],
+                                    casos: f.properties.intensidade,
+                                    nome: f.properties.municipio
+                                })) ?? []}
+                                quilombosLocalizacoes={[]}
                             />
                         </div>
                     )}
