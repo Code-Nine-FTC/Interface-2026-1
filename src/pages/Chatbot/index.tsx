@@ -3,6 +3,8 @@ import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
 import styles from "./Chatbot.module.css";
 import { enviarMensagemChat, ChatMensagemResponse, FonteCitada, Mapa } from "../../services/chatService";
+import { useLocation } from "react-router-dom";
+import { buscarHistoricoChat, MensagemHistorico } from "../../services/chatHistoricoService";
 
 interface Mensagem {
     id: string;
@@ -24,6 +26,27 @@ export default function Chatbot() {
     const [dadosMapa, setDadosMapa] = useState<Mapa | null>(null);
     const [chatId, setChatId] = useState<string | null>(null);
     const chatRef = useRef<HTMLDivElement>(null);
+    const location = useLocation();
+    // Carregar histórico se chat_id vier na URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const chat_id = params.get("chat_id");
+        if (chat_id) {
+            setChatId(chat_id);
+            buscarHistoricoChat(chat_id)
+                .then((historico: MensagemHistorico[]) => {
+                    setMensagens(historico.map(msg => ({
+                        ...msg,
+                        autor: msg.tipo === "bot" ? "Atlas" : undefined
+                    })));
+                    setChatIniciado(true);
+                })
+                .catch(() => {
+                    setMensagens([]);
+                    setChatIniciado(true);
+                });
+        }
+    }, [location.search]);
 
     useEffect(() => {
         if (chatRef.current) {
