@@ -1,0 +1,74 @@
+.container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.sm {
+    width: 40%;
+}
+
+.md {
+    width: 60%;
+}
+
+.lg {
+    width: 80%;
+}
+
+.inputWrapper {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-primary);
+    border: 2px solid var(--orange-main);
+    border-radius: 0.8rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--orange-main);
+    font-size: var(--font-size-md);
+    font-family: var(--font-family);
+}
+
+.input::placeholder {
+    color: var(--orange-main);
+    opacity: 0.8;
+}
+
+.iconButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown {
+    position: absolute;
+    top: 110%;
+    width: 100%;
+    background-color: var(--background-secondary);
+    border-radius: 0.6rem;
+    padding: 0.5rem 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.item:hover {
+    background-color: var(--background-textBox);
+}
+
+.active {
+    background-color: var(--background-textBox);
+}
