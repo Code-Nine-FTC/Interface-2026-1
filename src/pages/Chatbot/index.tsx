@@ -34,16 +34,39 @@ export default function Chatbot() {
         if (chat_id) {
             setChatId(chat_id);
             buscarHistoricoChat(chat_id)
-                .then((historico: MensagemHistorico[]) => {
-                    setMensagens(historico.map(msg => ({
-                        ...msg,
-                        autor: msg.tipo === "bot" ? "Atlas" : undefined
-                    })));
-                    const ultimaComMapa = historico.reverse().find(msg => msg.mapa);
-                    if (ultimaComMapa && ultimaComMapa.mapa) {
-                        setMostrarMapa(true);
-                        setDadosMapa(ultimaComMapa.mapa);
+                .then((data: any) => {
+                    if (data && Array.isArray(data.mensagens)) {
+                        const msgs: Mensagem[] = [];
+                        data.mensagens.forEach((item: any, idx: number) => {
+                            if (item.pergunta) {
+                                msgs.push({
+                                    id: item.consulta_id + "-user",
+                                    texto: item.pergunta,
+                                    tipo: "usuario"
+                                });
+                            }
+                            if (item.resposta) {
+                                msgs.push({
+                                    id: item.consulta_id + "-bot",
+                                    texto: item.resposta,
+                                    tipo: "bot",
+                                    autor: "Atlas",
+                                    fontes: item.fontes && item.fontes.length > 0 ? item.fontes : undefined,
+                                    mapa: item.mapa
+                                });
+                            }
+                        });
+                        setMensagens(msgs);
+                        const ultimaComMapa = msgs.slice().reverse().find(msg => msg.mapa);
+                        if (ultimaComMapa && ultimaComMapa.mapa) {
+                            setMostrarMapa(true);
+                            setDadosMapa(ultimaComMapa.mapa);
+                        } else {
+                            setMostrarMapa(false);
+                            setDadosMapa(null);
+                        }
                     } else {
+                        setMensagens([]);
                         setMostrarMapa(false);
                         setDadosMapa(null);
                     }
