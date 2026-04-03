@@ -15,6 +15,61 @@ interface Mensagem {
     mapa?: Mapa;
 }
 
+interface CoordenadaMapa {
+    lat: number;
+    lng: number;
+}
+
+function isNumeroValido(value: unknown): value is number {
+    return typeof value === "number" && Number.isFinite(value);
+}
+
+function coordenadaValida(coord: unknown): coord is [number, number] {
+    return Array.isArray(coord) && coord.length >= 2 && isNumeroValido(coord[0]) && isNumeroValido(coord[1]);
+}
+
+function coletarParesCoordenadas(coordinates: unknown, acc: [number, number][] = []): [number, number][] {
+    if (coordenadaValida(coordinates)) {
+        acc.push(coordinates);
+        return acc;
+    }
+
+    if (!Array.isArray(coordinates)) return acc;
+
+    for (const item of coordinates) {
+        coletarParesCoordenadas(item, acc);
+    }
+
+    return acc;
+}
+
+function coordenadaDoFeature(feature: Mapa["features"][number]): CoordenadaMapa | null {
+    const pares = coletarParesCoordenadas(feature?.geometry?.coordinates) ?? [];
+    if (pares.length === 0) return null;
+
+    let minLng = Infinity;
+    let minLat = Infinity;
+    let maxLng = -Infinity;
+    let maxLat = -Infinity;
+
+    for (const [lng, lat] of pares) {
+        if (!isNumeroValido(lat) || !isNumeroValido(lng)) continue;
+        if (lng < minLng) minLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lng > maxLng) maxLng = lng;
+        if (lat > maxLat) maxLat = lat;
+    }
+
+    if (!Number.isFinite(minLng) || !Number.isFinite(minLat) || !Number.isFinite(maxLng) || !Number.isFinite(maxLat)) {
+        return null;
+    }
+
+    return {
+        lat: (minLat + maxLat) / 2,
+        lng: (minLng + maxLng) / 2,
+    };
+}
+
 export default function Chatbot() {
     const { theme } = useTheme();
     const [mensagens, setMensagens] = useState<Mensagem[]>([]);
@@ -27,6 +82,25 @@ export default function Chatbot() {
     const [chatId, setChatId] = useState<string | null>(null);
     const chatRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
+    const possuiGeometriaDeArea = Boolean(
+        dadosMapa?.features?.some((f) => {
+            const tipo = f?.geometry?.type;
+            return tipo === "Polygon" || tipo === "MultiPolygon";
+        })
+    );
+    const queimadasLocalizacoes = dadosMapa?.features
+        ?.map((f) => {
+            const coord = coordenadaDoFeature(f);
+            if (!coord) return null;
+
+            return {
+                lat: coord.lat,
+                lng: coord.lng,
+                casos: Number.isFinite(f?.properties?.intensidade) ? f.properties.intensidade : 0,
+                nome: f?.properties?.nome || f?.properties?.municipio || "Sem nome"
+            };
+        })
+        .filter((item): item is { lat: number; lng: number; casos: number; nome: string } => item !== null) ?? [];
     // Carregar histórico se chat_id vier na URL
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -176,84 +250,80 @@ export default function Chatbot() {
                 <>
                     <h1>Consulte Dados Ambientais</h1>
                     <div className={styles.chatLayout}>
-                <div className={styles.chatContainer}>
-                    <div className={styles.messagesArea} ref={chatRef}>
-                        {mensagens.map(msg => (
-                            <div key={msg.id}>
-                                {msg.tipo === "bot" && msg.autor && (
-                                    <div className={styles.autorName}>{msg.autor}</div>
-                                )}
-                                <div className={`${styles.messageBubble} ${styles[msg.tipo]}`}>
-                                    {msg.tipo === "usuario" && (
-                                        <span className={styles.messageIcon}>👤</span>
-                                    )}
-                                    <div className={styles.messageContent}>
-                                        {msg.texto}
-                                        {/* Exibe fontes citadas se houver */}
-                                        {msg.fontes && msg.fontes.length > 0 && (
-                                            <div className={styles.fontesCitadas}>
-                                                <strong>Fontes consultadas:</strong>
-                                                <ul>
-                                                    {msg.fontes.map((fonte, idx) => (
-                                                        <li key={idx}>
-                                                            <a href={fonte.url} target="_blank" rel="noopener noreferrer">{fonte.nome}</a> ({fonte.orgao})
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
+                        <div className={styles.chatContainer}>
+                            <div className={styles.messagesArea} ref={chatRef}>
+                                {mensagens.map(msg => (
+                                    <div key={msg.id}>
+                                        {msg.tipo === "bot" && msg.autor && (
+                                            <div className={styles.autorName}>{msg.autor}</div>
                                         )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {digitando && (
-                            <div>
-                                <div className={styles.autorName}>Atlas</div>
-                                <div className={`${styles.messageBubble} ${styles.bot}`}>
-                                    <div className={styles.messageContent}>
-                                        <div className={styles.typingIndicator}>
-                                            <span className={styles.typingDot}></span>
-                                            <span className={styles.typingDot}></span>
-                                            <span className={styles.typingDot}></span>
+                                        <div className={`${styles.messageBubble} ${styles[msg.tipo]}`}>
+                                            {msg.tipo === "usuario" && (
+                                                <span className={styles.messageIcon}>👤</span>
+                                            )}
+                                            <div className={styles.messageContent}>
+                                                {msg.texto}
+                                                {/* Exibe fontes citadas se houver */}
+                                                {msg.fontes && msg.fontes.length > 0 && (
+                                                    <div className={styles.fontesCitadas}>
+                                                        <strong>Fontes consultadas:</strong>
+                                                        <ul>
+                                                            {msg.fontes.map((fonte, idx) => (
+                                                                <li key={idx}>
+                                                                    <a href={fonte.url} target="_blank" rel="noopener noreferrer">{fonte.nome}</a> ({fonte.orgao})
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ))}
+                                {digitando && (
+                                    <div>
+                                        <div className={styles.autorName}>Atlas</div>
+                                        <div className={`${styles.messageBubble} ${styles.bot}`}>
+                                            <div className={styles.messageContent}>
+                                                <div className={styles.typingIndicator}>
+                                                    <span className={styles.typingDot}></span>
+                                                    <span className={styles.typingDot}></span>
+                                                    <span className={styles.typingDot}></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Input */}
+                            <div className={styles.inputArea}>
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === "Enter" && handleEnviarMensagem()}
+                                    placeholder="Digite: queimadas, poluição ou quilombo..."
+                                    className={styles.input}
+                                />
+                                <button
+                                    onClick={handleEnviarMensagem}
+                                    className={styles.sendButton}
+                                >
+                                    ➤ Enviar
+                                </button>
+                            </div>
+                        </div>
+                        {mostrarMapa && dadosMapa && (
+                            <div className={styles.mapContainer}>
+                                <MapComponent
+                                    poluicaoLocalizacoes={[]}
+                                    queimadasLocalizacoes={possuiGeometriaDeArea ? [] : queimadasLocalizacoes}
+                                    quilombosLocalizacoes={[]}
+                                    geoJsonData={dadosMapa}
+                                />
                             </div>
                         )}
-                    </div>
-
-                    {/* Input */}
-                    <div className={styles.inputArea}>
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={(e) => e.key === "Enter" && handleEnviarMensagem()}
-                            placeholder="Digite: queimadas, poluição ou quilombo..."
-                            className={styles.input}
-                        />
-                        <button
-                            onClick={handleEnviarMensagem}
-                            className={styles.sendButton}
-                        >
-                            ➤ Enviar
-                        </button>
-                    </div>
-                </div>
-                    {mostrarMapa && dadosMapa && (
-                        <div className={styles.mapContainer}>
-                            <MapComponent
-                                poluicaoLocalizacoes={[]}
-                                queimadasLocalizacoes={dadosMapa.features?.map(f => ({
-                                    lat: f.geometry.coordinates[1],
-                                    lng: f.geometry.coordinates[0],
-                                    casos: f.properties.intensidade,
-                                    nome: f.properties.municipio
-                                })) ?? []}
-                                quilombosLocalizacoes={[]}
-                            />
-                        </div>
-                    )}
                     </div>
                 </>
             )}

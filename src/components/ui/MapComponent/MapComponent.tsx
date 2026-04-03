@@ -1,7 +1,9 @@
-import { MapContainer, TileLayer, Marker, Popup, LayerGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, LayerGroup, GeoJSON, useMap } from 'react-leaflet';
+import { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import styles from './MapComponent.module.css';
+import type { Mapa } from '../../../services/chatService';
 
 interface PoluicaoLocalizacao {
   lat: number;
@@ -28,9 +30,27 @@ interface MapComponentProps {
   poluicaoLocalizacoes: PoluicaoLocalizacao[];
   queimadasLocalizacoes: QueimadasLocalizacao[];
   quilombosLocalizacoes: QuilombosLocalizacao[];
+  geoJsonData?: Mapa | null;
 }
 
 const SP_CENTER: [number, number] = [-23.5505, -46.6333];
+
+function isValidLatLng(lat: number, lng: number): boolean {
+  return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
+function FitGeoJsonBounds({ data }: { data: Mapa }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const bounds = L.geoJSON(data as any).getBounds();
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [24, 24] });
+    }
+  }, [data, map]);
+
+  return null;
+}
 
 const poluicaoIcon = L.divIcon({
   html: '<div style="background-color: #9b59b6; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">🌍</div>',
@@ -54,7 +74,10 @@ export default function MapComponent({
   poluicaoLocalizacoes,
   queimadasLocalizacoes,
   quilombosLocalizacoes,
+  geoJsonData,
 }: MapComponentProps) {
+  const hasGeoJson = Boolean(geoJsonData?.features?.length);
+
   return (
     <div className={styles.mapContainer}>
       <MapContainer center={SP_CENTER} zoom={7} style={{ height: '100%', width: '100%' }}>
@@ -63,48 +86,83 @@ export default function MapComponent({
           attribution="&copy; OpenStreetMap contributors"
         />
 
+        {hasGeoJson && geoJsonData && (
+          <>
+            <FitGeoJsonBounds data={geoJsonData} />
+            <GeoJSON
+              data={geoJsonData as any}
+              style={() => ({
+                color: '#d35400',
+                weight: 2,
+                opacity: 1,
+                fillColor: '#f39c12',
+                fillOpacity: 0.25,
+              })}
+              onEachFeature={(feature, layer) => {
+                const properties = (feature?.properties ?? {}) as Record<string, unknown>;
+                const nome = String(properties.nome ?? properties.municipio ?? 'Sem nome');
+                const tipo = String(properties.tipo ?? 'Área');
+                const fase = properties.fase ? `<br/>Fase: ${String(properties.fase)}` : '';
+                layer.bindPopup(`<strong>${nome}</strong><br/>Tipo: ${tipo}${fase}`);
+              }}
+            />
+          </>
+        )}
+
         <LayerGroup>
-          {poluicaoLocalizacoes.map((localizacao, idx) => (
-            <Marker
-              key={`poluicao-${idx}`}
-              position={[localizacao.lat, localizacao.lng] as [number, number]}
-              icon={poluicaoIcon as any}
-            >
-              <Popup>
-                <strong>{localizacao.nome}</strong>
-                <br />
-                Índice: {localizacao.indice} µg/m³
-              </Popup>
-            </Marker>
-          ))}
+          {poluicaoLocalizacoes.map((localizacao, idx) => {
+            if (!isValidLatLng(localizacao.lat, localizacao.lng)) return null;
+
+            return (
+              <Marker
+                key={`poluicao-${idx}`}
+                position={[localizacao.lat, localizacao.lng] as [number, number]}
+                icon={poluicaoIcon as any}
+              >
+                <Popup>
+                  <strong>{localizacao.nome}</strong>
+                  <br />
+                  Índice: {localizacao.indice} µg/m³
+                </Popup>
+              </Marker>
+            );
+          })}
         </LayerGroup>
         <LayerGroup>
-          {queimadasLocalizacoes.map((localizacao, idx) => (
-            <Marker
-              key={`queimadas-${idx}`}
-              position={[localizacao.lat, localizacao.lng] as [number, number]}
-              icon={fireIcon as any}
-            >
-              <Popup>
-                <strong>{localizacao.nome}</strong>
-              </Popup>
-            </Marker>
-          ))}
+          {queimadasLocalizacoes.map((localizacao, idx) => {
+            if (!isValidLatLng(localizacao.lat, localizacao.lng)) return null;
+
+            return (
+              <Marker
+                key={`queimadas-${idx}`}
+                position={[localizacao.lat, localizacao.lng] as [number, number]}
+                icon={fireIcon as any}
+              >
+                <Popup>
+                  <strong>{localizacao.nome}</strong>
+                </Popup>
+              </Marker>
+            );
+          })}
         </LayerGroup>
         <LayerGroup>
-          {quilombosLocalizacoes.map((localizacao, idx) => (
-            <Marker
-              key={`quilombos-${idx}`}
-              position={[localizacao.lat, localizacao.lng] as [number, number]}
-              icon={quilomboIcon as any}
-            >
-              <Popup>
-                <strong>{localizacao.nome}</strong>
-                <br />
-                Status: {localizacao.status}
-              </Popup>
-            </Marker>
-          ))}
+          {quilombosLocalizacoes.map((localizacao, idx) => {
+            if (!isValidLatLng(localizacao.lat, localizacao.lng)) return null;
+
+            return (
+              <Marker
+                key={`quilombos-${idx}`}
+                position={[localizacao.lat, localizacao.lng] as [number, number]}
+                icon={quilomboIcon as any}
+              >
+                <Popup>
+                  <strong>{localizacao.nome}</strong>
+                  <br />
+                  Status: {localizacao.status}
+                </Popup>
+              </Marker>
+            );
+          })}
         </LayerGroup>
       </MapContainer>
     </div>

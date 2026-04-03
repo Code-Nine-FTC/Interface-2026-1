@@ -12,18 +12,21 @@ export interface FonteCitada {
 }
 
 export interface MapaFeatureProperties {
-  tipo: string;
-  data_ocorrencia: string;
-  fonte_sensor: string;
-  intensidade: number;
-  municipio: string;
+  tipo?: string;
+  data_ocorrencia?: string;
+  fonte_sensor?: string;
+  intensidade?: number;
+  municipio?: string | null;
+  nome?: string | null;
+  fase?: string | null;
+  area_ha?: number;
 }
 
 export interface MapaFeature {
   type: "Feature";
   geometry: {
-    type: "Point";
-    coordinates: [number, number];
+    type: string;
+    coordinates: unknown;
   };
   properties: MapaFeatureProperties;
 }
