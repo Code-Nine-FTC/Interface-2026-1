@@ -39,10 +39,20 @@ export default function Chatbot() {
                         ...msg,
                         autor: msg.tipo === "bot" ? "Atlas" : undefined
                     })));
+                    const ultimaComMapa = historico.reverse().find(msg => msg.mapa);
+                    if (ultimaComMapa && ultimaComMapa.mapa) {
+                        setMostrarMapa(true);
+                        setDadosMapa(ultimaComMapa.mapa);
+                    } else {
+                        setMostrarMapa(false);
+                        setDadosMapa(null);
+                    }
                     setChatIniciado(true);
                 })
                 .catch(() => {
                     setMensagens([]);
+                    setMostrarMapa(false);
+                    setDadosMapa(null);
                     setChatIniciado(true);
                 });
         }
