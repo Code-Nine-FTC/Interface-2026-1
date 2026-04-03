@@ -4,8 +4,10 @@ import { useTitle } from "../../context/TitleContext";
 import SearchBar, { SearchItem } from "../../components/ui/SearchBar/SearchBar";
 import Filters from "../../components/ui/Filters/Filters";
 import RegionCard from "../../components/ui/RegionCard/RegionCard";
+import Chart from "../../components/ui/Chart/Chart";
 
 import { mockRegions, RegionData } from "../../components/ui/RegionCard/Mock";
+
 
 export default function Dashboard() {
     const { setTitle } = useTitle();
@@ -42,6 +44,7 @@ export default function Dashboard() {
             <Filters />
 
             {selectedRegion && <RegionCard data={selectedRegion} />}
+            <Chart region={selectedRegion} />
         </div>
     );
 }
