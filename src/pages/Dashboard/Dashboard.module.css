@@ -18,7 +18,7 @@
 }
 
 .mapWrapper {
-    flex: 2;
+    flex: 1;
     min-height: 320px;
     border-radius: 12px;
     overflow: hidden;

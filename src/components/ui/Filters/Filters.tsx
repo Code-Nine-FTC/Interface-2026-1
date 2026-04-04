@@ -27,18 +27,10 @@ export default function Filters({
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingValue, setEditingValue] = useState("");
     
-    const [filters, setFilters] = useState<Filter[]>(
-        data || [
-            { id: 1, label: "Queimadas (INPE)", checked: false },
-            { id: 2, label: "Terras indígenas", checked: true },
-            { id: 3, label: "Unidades de conservação", checked: false },
-            { id: 4, label: "Quilombolas", checked: false },
-            { id: 5, label: "Assentamentos", checked: true },
-        ]
-    );
+    const [filters, setFilters] = useState<Filter[]>(data ?? []);
     
     useEffect(() => {
-        if (data) setFilters(data);
+        setFilters(data ?? []);
     }, [data]);
 
     const updateState = (newFilters: Filter[]) => {
@@ -106,7 +98,7 @@ export default function Filters({
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className={styles.arrow}>{isOpen ? "▼" : "▶"}</span>
-                <span className={styles.title}>Filtos por região:</span>
+                <span className={styles.title}>Filtros por região:</span>
             </div>
 
             {isOpen && (

@@ -31,6 +31,7 @@ interface MapComponentProps {
   queimadasLocalizacoes: QueimadasLocalizacao[];
   quilombosLocalizacoes: QuilombosLocalizacao[];
   geoJsonData?: Mapa | null;
+  renderKey?: string | number;
 }
 
 const SP_CENTER: [number, number] = [-23.5505, -46.6333];
@@ -127,6 +128,7 @@ export default function MapComponent({
   queimadasLocalizacoes,
   quilombosLocalizacoes,
   geoJsonData,
+  renderKey,
 }: MapComponentProps) {
   const hasGeoJson = Boolean(geoJsonData?.features?.length);
 
@@ -142,6 +144,7 @@ export default function MapComponent({
           <>
             <FitGeoJsonBounds data={geoJsonData} />
             <GeoJSON
+              key={renderKey ?? 'geojson-default'}
               data={geoJsonData as any}
               style={getGeoJsonStyle}
               pointToLayer={pointToLayer}

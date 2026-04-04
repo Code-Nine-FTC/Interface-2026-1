@@ -3,9 +3,18 @@ import styles from "./SearchBar.module.css";
 
 type Size = "sm" | "md" | "lg";
 
+function normalizeSearchText(value: string): string {
+    return value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
 export type SearchItem = {
     id?: string | number;
     label: string;
+    meta?: unknown;
 };
 
 interface SearchBarProps {
@@ -18,21 +27,6 @@ interface SearchBarProps {
     onSelect?: (item: SearchItem) => void;
 }
 
-const mockCities: SearchItem[] = [
-    { label: "São Paulo" },
-    { label: "Campinas" },
-    { label: "Santos" },
-    { label: "Ribeirão Preto" },
-    { label: "Sorocaba" },
-    { label: "São José dos Campos" },
-    { label: "Bauru" },
-    { label: "Osasco" },
-    { label: "Guarulhos" },
-    { label: "Mogi das Cruzes" },
-    { label: "São Bernardo do Campo" },
-    { label: "Santo André" },
-];
-
 export default function SearchBar({
                                       size = "md",
                                       data,
@@ -40,18 +34,45 @@ export default function SearchBar({
                                       onSelect,
                                   }: SearchBarProps) {
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<SearchItem[]>(data || mockCities);
+    const [results, setResults] = useState<SearchItem[]>(data ?? []);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
     useEffect(() => {
-        if (data) setResults(data);
-    }, [data]);
+        if (onSearch) return;
+
+        const source = data ?? [];
+        const normalizedQuery = normalizeSearchText(query);
+
+        if (!normalizedQuery) {
+            setResults(source);
+            return;
+        }
+
+        setResults(
+            source.filter((item) =>
+                normalizeSearchText(item.label).includes(normalizedQuery)
+            )
+        );
+    }, [data, onSearch, query]);
+
+    const filterLocalData = (value: string) => {
+        const source = data ?? [];
+        const normalizedValue = normalizeSearchText(value);
+
+        return source.filter((item) =>
+            normalizeSearchText(item.label).includes(normalizedValue)
+        );
+    };
 
     const handleSearch = async (value: string) => {
+        setQuery(value);
+
         if (!value) {
-            setResults([]);
-            setIsOpen(false);
+            const source = data ?? [];
+            setResults(source);
+            setIsOpen(source.length > 0);
+            setSelectedIndex(-1);
             return;
         }
 
@@ -60,7 +81,7 @@ export default function SearchBar({
 
             if (Array.isArray(response)) {
                 setResults(response);
-                setIsOpen(true);
+                setIsOpen(response.length > 0);
                 setSelectedIndex(-1);
             } else {
                 setIsOpen(true);
@@ -69,13 +90,10 @@ export default function SearchBar({
             return;
         }
 
-       
-        const filtered = (data || mockCities).filter(item =>
-            item.label.toLowerCase().includes(value.toLowerCase())
-        );
+        const filtered = filterLocalData(value);
 
         setResults(filtered);
-        setIsOpen(true);
+        setIsOpen(filtered.length > 0);
         setSelectedIndex(-1);
     };
 
@@ -139,6 +157,7 @@ export default function SearchBar({
                 />
 
                 <button
+                    type="button"
                     className={styles.iconButton}
                     onClick={() => {
                         if (results.length > 0) {

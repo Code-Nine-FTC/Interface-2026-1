@@ -66,7 +66,7 @@ export default function Sidebar() {
                         <button
                             key={chat.id}
                             className={styles.chatListItem}
-                            onClick={() => navigate(`/chatbot?chat_id=${chat.id}`)}
+                            onClick={() => navigate(`/chatbot?chat_id=${chat.id}&view=${Date.now()}`)}
                         >
                             {chat.title}
                         </button>
