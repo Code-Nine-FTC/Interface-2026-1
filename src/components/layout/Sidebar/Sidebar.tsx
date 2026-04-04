@@ -1,13 +1,23 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 import logo from "../../../assets/logo.svg";
 import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
 
+import { useEffect, useState } from "react";
+import { buscarChats, ChatListItem } from "../../../services/chatListService";
+
 export default function Sidebar() {
     const { theme } = useTheme();
     const { isLoading } = useLoading();
+
+    const [chats, setChats] = useState<ChatListItem[]>([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        buscarChats().then(setChats).catch(() => setChats([]));
+    }, []);
 
     const activeStyle = { color: theme.orange.secondary };
     const normalStyle = { color: theme.orange.main };
@@ -48,6 +58,20 @@ export default function Sidebar() {
                         </Skeleton>
                     </NavLink>
                 ))}
+                {/* Lista de chats */}
+                <div className={styles.chatsList}>
+                    <div className={styles.chatsListTitle}>Seus chats</div>
+                    {chats.length === 0 && <div className={styles.chatsListEmpty}>Nenhum chat encontrado</div>}
+                    {chats.map(chat => (
+                        <button
+                            key={chat.id}
+                            className={styles.chatListItem}
+                            onClick={() => navigate(`/chatbot?chat_id=${chat.id}`)}
+                        >
+                            {chat.title}
+                        </button>
+                    ))}
+                </div>
             </nav>
         </aside>
     );
