@@ -17,39 +17,28 @@ import {
     ResponsiveContainer,
 } from "recharts";
 
-import { RegionData } from "../RegionCard/Mock";
-import { generateChartData } from "./mock";
-
-export type ChartDataItem = {
-    name: string;
-    value: number;
-};
+import type { RegionData } from "../RegionCard/types";
+import { buildChartData, type ChartDataItem } from "./chartData";
 
 type Props = {
-    region?: RegionData;         // mock/local
-    data?: ChartDataItem[];      // backend
-    loading?: boolean;           // futuro loading state
+    region?: RegionData;
+    data?: ChartDataItem[];
+    loading?: boolean;
+    title?: string;
 };
 
 type ChartType = "bar" | "pie" | "line" | "area";
 
 const chartOptions = [
     { label: "Barra", value: "bar" },
-    { label: "Pizza", value: "pie" },
-    { label: "Linha", value: "line" },
-    { label: "Área", value: "area" },
+    // { label: "Pizza", value: "pie" },
+    // { label: "Linha", value: "line" },
+    // { label: "Área", value: "area" },
 ];
 
-export default function Chart({ region, data: externalData, loading }: Props) {
+export default function Chart({ region, data: externalData, loading, title = "Quantidade por tipo de dado:" }: Props) {
     const [chartType, setChartType] = useState<ChartType>("bar");
     const [isOpen, setIsOpen] = useState(false);
-
-    // 🔥 AQUI É O PULO DO GATO
-    const data = useMemo(() => {
-        if (externalData) return externalData;
-        if (region) return generateChartData(region);
-        return [];
-    }, [externalData, region]);
 
     const selectedLabel =
         chartOptions.find((o) => o.value === chartType)?.label;
@@ -58,21 +47,27 @@ export default function Chart({ region, data: externalData, loading }: Props) {
         return <div style={{ color: "var(--text-secondary)" }}>Carregando...</div>;
     }
 
+    const chartData = useMemo(() => {
+        if (externalData) return externalData;
+        if (region) return buildChartData(region);
+        return [];
+    }, [externalData, region]);
+
     return (
         <div className={styles.container}>
             <div className={styles.topBar}>
                 <span className={styles.title}>
-                    Quantidade por tipo de dado:
+                    {title}
                 </span>
 
                 <div className={styles.dropdownWrapper}>
-                    <div
+                    {/* <div
                         className={styles.dropdownButton}
                         onClick={() => setIsOpen((prev) => !prev)}
                     >
                         {selectedLabel}
                         <span>▼</span>
-                    </div>
+                    </div> */}
 
                     {isOpen && (
                         <div className={styles.dropdownList}>
@@ -98,7 +93,7 @@ export default function Chart({ region, data: externalData, loading }: Props) {
                     <ResponsiveContainer width="100%" height={300}>
                         <>
                             {chartType === "bar" && (
-                                <BarChart data={data}>
+                                <BarChart data={chartData}>
                                     <XAxis tick={{ fill: "var(--text-secondary)" }} dataKey="name" />
                                     <YAxis tick={{ fill: "var(--text-secondary)" }} />
                                     <Tooltip />
@@ -107,7 +102,7 @@ export default function Chart({ region, data: externalData, loading }: Props) {
                             )}
 
                             {chartType === "line" && (
-                                <LineChart data={data}>
+                                <LineChart data={chartData}>
                                     <XAxis tick={{ fill: "var(--text-secondary)" }} dataKey="name" />
                                     <YAxis tick={{ fill: "var(--text-secondary)" }} />
                                     <Tooltip />
@@ -122,7 +117,7 @@ export default function Chart({ region, data: externalData, loading }: Props) {
                             )}
 
                             {chartType === "area" && (
-                                <AreaChart data={data}>
+                                <AreaChart data={chartData}>
                                     <XAxis tick={{ fill: "var(--text-secondary)" }} dataKey="name" />
                                     <YAxis tick={{ fill: "var(--text-secondary)" }} />
                                     <Tooltip />
@@ -141,8 +136,8 @@ export default function Chart({ region, data: externalData, loading }: Props) {
                     <div className={styles.pieContainer}>
                         <ResponsiveContainer width="60%" height={300}>
                             <PieChart>
-                                <Pie data={data} dataKey="value" nameKey="name" outerRadius={100}>
-                                    {data.map((_, index) => (
+                                <Pie data={chartData} dataKey="value" nameKey="name" outerRadius={100}>
+                                    {chartData.map((_, index) => (
                                         <Cell key={index} fill="var(--orange-main)" />
                                     ))}
                                 </Pie>
@@ -151,7 +146,7 @@ export default function Chart({ region, data: externalData, loading }: Props) {
                         </ResponsiveContainer>
 
                         <div className={styles.legend}>
-                            {data.map((item, index) => (
+                            {chartData.map((item, index) => (
                                 <div key={index} className={styles.legendItem}>
                                     <div className={styles.colorBox} />
                                     {item.name} ({item.value})

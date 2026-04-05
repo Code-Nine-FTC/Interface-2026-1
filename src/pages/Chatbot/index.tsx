@@ -2,16 +2,71 @@ import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
 import styles from "./Chatbot.module.css";
+import { enviarMensagemChat, ChatMensagemResponse, FonteCitada, Mapa } from "../../services/chatService";
+import { useLocation } from "react-router-dom";
+import { buscarHistoricoChat, MensagemHistorico } from "../../services/chatHistoricoService";
 
 interface Mensagem {
     id: string;
     texto: string;
     tipo: "usuario" | "bot";
     autor?: string;
-    dados?: {
-        poluicao?: Array<{ lat: number; lng: number; valor: number; local: string }>;
-        queimadas?: Array<{ lat: number; lng: number; casos: number; local: string }>;
-        quilombos?: Array<{ lat: number; lng: number; status: string; local: string }>;
+    fontes?: FonteCitada[];
+    mapa?: Mapa;
+}
+
+interface CoordenadaMapa {
+    lat: number;
+    lng: number;
+}
+
+function isNumeroValido(value: unknown): value is number {
+    return typeof value === "number" && Number.isFinite(value);
+}
+
+function coordenadaValida(coord: unknown): coord is [number, number] {
+    return Array.isArray(coord) && coord.length >= 2 && isNumeroValido(coord[0]) && isNumeroValido(coord[1]);
+}
+
+function coletarParesCoordenadas(coordinates: unknown, acc: [number, number][] = []): [number, number][] {
+    if (coordenadaValida(coordinates)) {
+        acc.push(coordinates);
+        return acc;
+    }
+
+    if (!Array.isArray(coordinates)) return acc;
+
+    for (const item of coordinates) {
+        coletarParesCoordenadas(item, acc);
+    }
+
+    return acc;
+}
+
+function coordenadaDoFeature(feature: Mapa["features"][number]): CoordenadaMapa | null {
+    const pares = coletarParesCoordenadas(feature?.geometry?.coordinates) ?? [];
+    if (pares.length === 0) return null;
+
+    let minLng = Infinity;
+    let minLat = Infinity;
+    let maxLng = -Infinity;
+    let maxLat = -Infinity;
+
+    for (const [lng, lat] of pares) {
+        if (!isNumeroValido(lat) || !isNumeroValido(lng)) continue;
+        if (lng < minLng) minLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lng > maxLng) maxLng = lng;
+        if (lat > maxLat) maxLat = lat;
+    }
+
+    if (!Number.isFinite(minLng) || !Number.isFinite(minLat) || !Number.isFinite(maxLng) || !Number.isFinite(maxLat)) {
+        return null;
+    }
+
+    return {
+        lat: (minLat + maxLat) / 2,
+        lng: (minLng + maxLng) / 2,
     };
 }
 
@@ -23,12 +78,78 @@ export default function Chatbot() {
     const [digitando, setDigitando] = useState(false);
     const [chatIniciado, setChatIniciado] = useState(false);
     const [exitandoWelcome, setExitandoWelcome] = useState(false);
-    const [dadosMapa, setDadosMapa] = useState({
-        poluicao: [] as any[],
-        queimadas: [] as any[],
-        quilombos: [] as any[]
-    });
+    const [dadosMapa, setDadosMapa] = useState<Mapa | null>(null);
+    const [chatId, setChatId] = useState<string | null>(null);
     const chatRef = useRef<HTMLDivElement>(null);
+    const location = useLocation();
+    const possuiGeoJson = Boolean(dadosMapa?.features?.length);
+    const geoJsonParaRenderizar = possuiGeoJson ? dadosMapa : null;
+    const queimadasLocalizacoes = dadosMapa?.features
+        ?.map((f) => {
+            const coord = coordenadaDoFeature(f);
+            if (!coord) return null;
+
+            return {
+                lat: coord.lat,
+                lng: coord.lng,
+                casos: Number.isFinite(f?.properties?.intensidade) ? f.properties.intensidade : 0,
+                nome: f?.properties?.nome || f?.properties?.municipio || "Sem nome"
+            };
+        })
+        .filter((item): item is { lat: number; lng: number; casos: number; nome: string } => item !== null) ?? [];
+    // Carregar histórico se chat_id vier na URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const chat_id = params.get("chat_id");
+        if (chat_id) {
+            setChatId(chat_id);
+            buscarHistoricoChat(chat_id)
+                .then((data: any) => {
+                    if (data && Array.isArray(data.mensagens)) {
+                        const msgs: Mensagem[] = [];
+                        data.mensagens.forEach((item: any, idx: number) => {
+                            if (item.pergunta) {
+                                msgs.push({
+                                    id: item.consulta_id + "-user",
+                                    texto: item.pergunta,
+                                    tipo: "usuario"
+                                });
+                            }
+                            if (item.resposta) {
+                                msgs.push({
+                                    id: item.consulta_id + "-bot",
+                                    texto: item.resposta,
+                                    tipo: "bot",
+                                    autor: "Atlas",
+                                    fontes: item.fontes && item.fontes.length > 0 ? item.fontes : undefined,
+                                    mapa: item.mapa
+                                });
+                            }
+                        });
+                        setMensagens(msgs);
+                        const ultimaComMapa = msgs.slice().reverse().find(msg => msg.mapa);
+                        if (ultimaComMapa && ultimaComMapa.mapa) {
+                            setMostrarMapa(true);
+                            setDadosMapa(ultimaComMapa.mapa);
+                        } else {
+                            setMostrarMapa(false);
+                            setDadosMapa(null);
+                        }
+                    } else {
+                        setMensagens([]);
+                        setMostrarMapa(false);
+                        setDadosMapa(null);
+                    }
+                    setChatIniciado(true);
+                })
+                .catch(() => {
+                    setMensagens([]);
+                    setMostrarMapa(false);
+                    setDadosMapa(null);
+                    setChatIniciado(true);
+                });
+        }
+    }, [location.search]);
 
     useEffect(() => {
         if (chatRef.current) {
@@ -55,73 +176,38 @@ export default function Chatbot() {
         setInput("");
         setDigitando(true);
 
-        setTimeout(() => {
-            const respostaBot = processarMensagem(input);
-            respostaBot.autor = "Atlas";
-            setMensagens(prev => [...prev, respostaBot]);
+        try {
+            const resposta: ChatMensagemResponse = await enviarMensagemChat(input, chatId);
+            setChatId(resposta.chat_id);
+            const mensagemBot: Mensagem = {
+                id: resposta.resposta_id,
+                texto: resposta.texto_resposta,
+                tipo: "bot",
+                autor: "Atlas",
+                fontes: resposta.fontes_citadas,
+                mapa: resposta.mapa
+            };
+            setMensagens(prev => [...prev, mensagemBot]);
             setDigitando(false);
-
-            if (respostaBot.dados) {
+            if (resposta.mapa) {
                 setMostrarMapa(true);
-                setDadosMapa({
-                    poluicao: respostaBot.dados.poluicao || [],
-                    queimadas: respostaBot.dados.queimadas || [],
-                    quilombos: respostaBot.dados.quilombos || []
-                });
+                setDadosMapa(resposta.mapa);
+            } else {
+                setMostrarMapa(false);
+                setDadosMapa(null);
             }
-        }, 1200);
+        } catch (error: any) {
+            setMensagens(prev => [...prev, {
+                id: Date.now().toString(),
+                texto: "Erro ao consultar o backend. Tente novamente.",
+                tipo: "bot",
+                autor: "Atlas"
+            }]);
+            setDigitando(false);
+        }
     };
 
-    const processarMensagem = (texto: string): Mensagem => {
-        if (texto.toLowerCase().includes("queimada")) {
-            return {
-                id: Date.now().toString(),
-                texto: "Aqui estão os dados de queimadas detectadas em SP:",
-                tipo: "bot",
-                dados: {
-                    queimadas: [
-                        { lat: -23.5505, lng: -46.6333, casos: 5, local: "São Paulo" },
-                        { lat: -22.9068, lng: -43.1729, casos: 3, local: "Rio de Janeiro" },
-                        { lat: -23.2237, lng: -49.6492, casos: 7, local: "Maringá" }
-                    ]
-                }
-            };
-        }
-
-        if (texto.toLowerCase().includes("poluição")) {
-            return {
-                id: Date.now().toString(),
-                texto: "Monitorando poluição em São Paulo. Veja no mapa:",
-                tipo: "bot",
-                dados: {
-                    poluicao: [
-                        { lat: -23.5505, lng: -46.6333, valor: 85, local: "Centro SP" },
-                        { lat: -23.6345, lng: -46.7325, valor: 72, local: "Zona Leste" }
-                    ]
-                }
-            };
-        }
-
-        if (texto.toLowerCase().includes("quilombo")) {
-            return {
-                id: Date.now().toString(),
-                texto: "Quilombos registrados no estado:",
-                tipo: "bot",
-                dados: {
-                    quilombos: [
-                        { lat: -23.4, lng: -46.4, status: "ativo", local: "Quilombo A" },
-                        { lat: -23.7, lng: -46.8, status: "ativo", local: "Quilombo B" }
-                    ]
-                }
-            };
-        }
-
-        return {
-            id: Date.now().toString(),
-            texto: "Digite 'queimadas', 'poluição' ou 'quilombo' para ver dados no mapa!",
-            tipo: "bot"
-        };
-    };
+    // Removido processarMensagem pois agora a resposta vem do backend
 
     return (
         <div
@@ -160,66 +246,80 @@ export default function Chatbot() {
                 <>
                     <h1>Consulte Dados Ambientais</h1>
                     <div className={styles.chatLayout}>
-                <div className={styles.chatContainer}>
-                    <div className={styles.messagesArea} ref={chatRef}>
-                        {mensagens.map(msg => (
-                            <div key={msg.id}>
-                                {msg.tipo === "bot" && msg.autor && (
-                                    <div className={styles.autorName}>{msg.autor}</div>
-                                )}
-                                <div className={`${styles.messageBubble} ${styles[msg.tipo]}`}>
-                                    {msg.tipo === "usuario" && (
-                                        <span className={styles.messageIcon}>👤</span>
-                                    )}
-                                    <div className={styles.messageContent}>
-                                        {msg.texto}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {digitando && (
-                            <div>
-                                <div className={styles.autorName}>Atlas</div>
-                                <div className={`${styles.messageBubble} ${styles.bot}`}>
-                                    <div className={styles.messageContent}>
-                                        <div className={styles.typingIndicator}>
-                                            <span className={styles.typingDot}></span>
-                                            <span className={styles.typingDot}></span>
-                                            <span className={styles.typingDot}></span>
+                        <div className={styles.chatContainer}>
+                            <div className={styles.messagesArea} ref={chatRef}>
+                                {mensagens.map(msg => (
+                                    <div key={msg.id}>
+                                        {msg.tipo === "bot" && msg.autor && (
+                                            <div className={styles.autorName}>{msg.autor}</div>
+                                        )}
+                                        <div className={`${styles.messageBubble} ${styles[msg.tipo]}`}>
+                                            {msg.tipo === "usuario" && (
+                                                <span className={styles.messageIcon}>👤</span>
+                                            )}
+                                            <div className={styles.messageContent}>
+                                                {msg.texto}
+                                                {/* Exibe fontes citadas se houver */}
+                                                {msg.fontes && msg.fontes.length > 0 && (
+                                                    <div className={styles.fontesCitadas}>
+                                                        <strong>Fontes consultadas:</strong>
+                                                        <ul>
+                                                            {msg.fontes.map((fonte, idx) => (
+                                                                <li key={idx}>
+                                                                    <a href={fonte.url} target="_blank" rel="noopener noreferrer">{fonte.nome}</a> ({fonte.orgao})
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ))}
+                                {digitando && (
+                                    <div>
+                                        <div className={styles.autorName}>Atlas</div>
+                                        <div className={`${styles.messageBubble} ${styles.bot}`}>
+                                            <div className={styles.messageContent}>
+                                                <div className={styles.typingIndicator}>
+                                                    <span className={styles.typingDot}></span>
+                                                    <span className={styles.typingDot}></span>
+                                                    <span className={styles.typingDot}></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Input */}
+                            <div className={styles.inputArea}>
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === "Enter" && handleEnviarMensagem()}
+                                    placeholder="Digite: queimadas, poluição ou quilombo..."
+                                    className={styles.input}
+                                />
+                                <button
+                                    onClick={handleEnviarMensagem}
+                                    className={styles.sendButton}
+                                >
+                                    ➤ Enviar
+                                </button>
+                            </div>
+                        </div>
+                        {mostrarMapa && dadosMapa && (
+                            <div className={styles.mapContainer}>
+                                <MapComponent
+                                    poluicaoLocalizacoes={[]}
+                                    queimadasLocalizacoes={possuiGeoJson ? [] : queimadasLocalizacoes}
+                                    quilombosLocalizacoes={[]}
+                                    geoJsonData={geoJsonParaRenderizar}
+                                />
                             </div>
                         )}
-                    </div>
-
-                    {/* Input */}
-                    <div className={styles.inputArea}>
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={(e) => e.key === "Enter" && handleEnviarMensagem()}
-                            placeholder="Digite: queimadas, poluição ou quilombo..."
-                            className={styles.input}
-                        />
-                        <button
-                            onClick={handleEnviarMensagem}
-                            className={styles.sendButton}
-                        >
-                            ➤ Enviar
-                        </button>
-                    </div>
-                </div>
-                    {mostrarMapa && (
-                        <div className={styles.mapContainer}>
-                            <MapComponent
-                                poluicaoLocalizacoes={dadosMapa.poluicao}
-                                queimadasLocalizacoes={dadosMapa.queimadas}
-                                quilombosLocalizacoes={dadosMapa.quilombos}
-                            />
-                        </div>
-                    )}
                     </div>
                 </>
             )}

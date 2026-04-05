@@ -1,21 +1,7 @@
 import styles from "./RegionCard.module.css";
+import type { RegionData } from "./types";
 
-export type RegionData = {
-    name?: string;
-    areaKm2?: number;
-    burnedOccurrences?: number;
-
-    indicators?: {
-        queimadas?: boolean;
-        terrasIndigenas?: boolean;
-        unidadesConservacao?: boolean;
-        quilombolas?: boolean;
-        assentamentos?: boolean;
-    };
-
-    score?: number;
-    risk?: "baixo" | "medio" | "alto";
-};
+export type { RegionData } from "./types";
 
 type Props = {
     data?: RegionData | null;
