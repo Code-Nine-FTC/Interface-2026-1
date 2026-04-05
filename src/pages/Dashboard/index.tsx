@@ -18,6 +18,25 @@ import {
     type MunicipalityMetricItem,
 } from "../../services/dashboardService";
 
+const DASHBOARD_CHAT_UUID = "7f51f8c8-aac2-4f3e-a066-95f538f58ac1";
+const DASHBOARD_CHAT_STORAGE_KEY = "dashboard_chat_id";
+
+function getDashboardChatId(): string {
+    if (typeof window === "undefined") return DASHBOARD_CHAT_UUID;
+
+    const stored = window.localStorage.getItem(DASHBOARD_CHAT_STORAGE_KEY);
+    if (stored && stored.trim().length > 0) return stored;
+
+    return DASHBOARD_CHAT_UUID;
+}
+
+function saveDashboardChatId(chatId: string) {
+    if (typeof window === "undefined") return;
+    if (!chatId || !chatId.trim()) return;
+
+    window.localStorage.setItem(DASHBOARD_CHAT_STORAGE_KEY, chatId);
+}
+
 function normalizeText(value: string): string {
     return value
         .normalize("NFD")
@@ -89,7 +108,7 @@ export default function Dashboard() {
     const [municipalityMetrics, setMunicipalityMetrics] = useState<MunicipalityMetricItem[]>([]);
     const [selectedMunicipality, setSelectedMunicipality] = useState<MunicipalityFeature | null>(null);
     const [dashboardMap, setDashboardMap] = useState<Mapa | null>(null);
-    const [chatId, setChatId] = useState<string | null>(null);
+    const [dashboardChatId, setDashboardChatId] = useState<string>(getDashboardChatId);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -117,11 +136,15 @@ export default function Dashboard() {
                     setSelectedMunicipality(list[0]);
                     const response = await enviarMensagemChat(
                         `Queimadas em ${list[0].properties.nome}`,
-                        null
+                        dashboardChatId
                     );
 
                     if (!cancelled) {
-                        setChatId(response.chat_id);
+                        if (response.chat_id && response.chat_id !== dashboardChatId) {
+                            setDashboardChatId(response.chat_id);
+                            saveDashboardChatId(response.chat_id);
+                        }
+
                         const filteredMap = filterMapByMunicipality(response.mapa ?? null, list[0].properties.nome);
                         setDashboardMap(filteredMap?.features?.length ? filteredMap : municipalityFeatureToMap(list[0]));
                     }
@@ -199,10 +222,14 @@ export default function Dashboard() {
         try {
             const response = await enviarMensagemChat(
                 `Queimadas em ${fromList.properties.nome}`,
-                chatId
+                dashboardChatId
             );
 
-            setChatId(response.chat_id);
+            if (response.chat_id && response.chat_id !== dashboardChatId) {
+                setDashboardChatId(response.chat_id);
+                saveDashboardChatId(response.chat_id);
+            }
+
             const filteredMap = filterMapByMunicipality(response.mapa ?? null, fromList.properties.nome);
             setDashboardMap(filteredMap?.features?.length ? filteredMap : municipalityFeatureToMap(fromList));
         } catch {
