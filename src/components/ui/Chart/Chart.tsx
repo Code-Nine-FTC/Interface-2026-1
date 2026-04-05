@@ -31,9 +31,9 @@ type ChartType = "bar" | "pie" | "line" | "area";
 
 const chartOptions = [
     { label: "Barra", value: "bar" },
-    { label: "Pizza", value: "pie" },
-    { label: "Linha", value: "line" },
-    { label: "Área", value: "area" },
+    // { label: "Pizza", value: "pie" },
+    // { label: "Linha", value: "line" },
+    // { label: "Área", value: "area" },
 ];
 
 export default function Chart({ region, data: externalData, loading, title = "Quantidade por tipo de dado:" }: Props) {
@@ -61,13 +61,13 @@ export default function Chart({ region, data: externalData, loading, title = "Qu
                 </span>
 
                 <div className={styles.dropdownWrapper}>
-                    <div
+                    {/* <div
                         className={styles.dropdownButton}
                         onClick={() => setIsOpen((prev) => !prev)}
                     >
                         {selectedLabel}
                         <span>▼</span>
-                    </div>
+                    </div> */}
 
                     {isOpen && (
                         <div className={styles.dropdownList}>

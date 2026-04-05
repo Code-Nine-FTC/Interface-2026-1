@@ -66,16 +66,16 @@ type DashboardResponseShape =
       };
 
 const DASHBOARD_ENDPOINTS = [
-    "/api/analytics/",
-    "/api/analytics",
-    "/api/municipal/",
-    "/api/municipal",
+    "/analytics/",
+    "/analytics",
+    "/municipal/",
+    "/municipal",
 ];
 
-const MUNICIPAL_LIST_ENDPOINTS = ["/api/municipal/geojson/layers/municipios"];
+const MUNICIPAL_LIST_ENDPOINTS = ["/municipal/geojson/layers/municipios"];
 const FIRE_METRIC_ENDPOINTS = [
-    "/api/analytics/queimadas/focos-por-municipio",
-    "/api/analytics/queimadas/focos-por-estado",
+    "/analytics/queimadas/focos-por-municipio",
+    "/analytics/queimadas/focos-por-estado",
 ];
 
 function toNumber(value: unknown): number | undefined {
@@ -232,14 +232,15 @@ async function fetchJsonFromCandidates() {
 
     for (const endpoint of DASHBOARD_ENDPOINTS) {
         try {
-            const response = await fetch(endpoint, {
+            const url = `http://127.0.0.1:5000${endpoint}`;
+            const response = await fetch(url, {
                 headers: {
                     Accept: "application/json",
                 },
             });
 
             if (!response.ok) {
-                lastError = new Error(`Erro ao acessar ${endpoint}: ${response.status}`);
+                lastError = new Error(`Erro ao acessar ${url}: ${response.status}`);
                 continue;
             }
 
@@ -257,14 +258,15 @@ async function fetchJsonFromEndpointCandidates(endpoints: string[]) {
 
     for (const endpoint of endpoints) {
         try {
-            const response = await fetch(endpoint, {
+            const url = `http://127.0.0.1:5000${endpoint}`;
+            const response = await fetch(url, {
                 headers: {
                     Accept: "application/json",
                 },
             });
 
             if (!response.ok) {
-                lastError = new Error(`Erro ao acessar ${endpoint}: ${response.status}`);
+                lastError = new Error(`Erro ao acessar ${url}: ${response.status}`);
                 continue;
             }
 

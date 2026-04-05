@@ -151,7 +151,7 @@ export default function SearchBar({
                     }}
                     onKeyDown={handleKeyDown}
                     onFocus={() => {
-                        if (results.length > 0) setIsOpen(true);
+                        if (results.length > -1) setIsOpen(true);
                     }}
                     className={styles.input}
                 />
