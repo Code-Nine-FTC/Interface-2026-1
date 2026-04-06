@@ -7,6 +7,7 @@ import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
 
 import { useEffect, useState } from "react";
 import { buscarChats, ChatListItem } from "../../../services/chatListService";
+import { useTitle } from "../../../context/TitleContext";
 
 export default function Sidebar() {
     const { theme } = useTheme();
@@ -15,6 +16,8 @@ export default function Sidebar() {
     const [chats, setChats] = useState<ChatListItem[]>([]);
     const navigate = useNavigate();
     const location = useLocation();
+
+    const { setTitle } = useTitle();
 
     const currentChatId = new URLSearchParams(location.search).get("chat_id");
 
@@ -26,11 +29,9 @@ export default function Sidebar() {
     const normalStyle = { color: theme.orange.main };
 
     const menuItems = [
-        { to: "/", label: "Chatbot", icon: <ChatbotIcon />, disabled: false },
-        { to: "/relatorio", label: "Relatório", icon: <ReportIcon />, disabled: true },
-        { to: "/dashboard", label: "Dashboard", icon: <DashboardIcon />, disabled: false },
-        { to: "/filtros", label: "Filtrar dados", icon: <FilterIcon />, disabled: true },
-    ];
+    { to: "/", label: "Chatbot", icon: <ChatbotIcon />, disabled: false },
+    { to: "/dashboard", label: "Dashboard", icon: <DashboardIcon />, disabled: false },
+];
 
     return (
         <aside className={styles.sidebar} style={{ background: theme.background.secondary }}>
@@ -62,20 +63,39 @@ export default function Sidebar() {
                     </NavLink>
                 ))}
                 {/* Lista de chats */}
-                <div className={styles.chatsList}>
-                    <div className={styles.chatsListTitle}>Seus chats</div>
-                    {chats.length === 0 && <div className={styles.chatsListEmpty}>Nenhum chat encontrado</div>}
-                    {chats.map(chat => (
-                        <button
-                            key={chat.id}
-                            className={`${styles.chatListItem} ${currentChatId === chat.id ? styles.chatListItemActive : ""}`.trim()}
-                            onClick={() => navigate(`/chatbot?chat_id=${chat.id}&view=${Date.now()}`)}
-                            title={chat.title}
-                        >
-                            <span className={styles.chatListItemText}>{chat.title}</span>
-                        </button>
-                    ))}
-                </div>
+                <div className={styles.chatsWrapper}>
+    <hr className={styles.divider} />
+
+    <span className={styles.historyTitle}>
+        Histórico de chats
+    </span>
+
+            <div className={styles.chatsList}>
+                {chats.length === 0 && (
+                    <div className={styles.chatsListEmpty}>
+                        Nenhum chat encontrado
+                    </div>
+                )}
+
+                {chats.map(chat => (
+                    <button
+                        key={chat.id}
+                        className={`${styles.chatListItem} ${
+                            currentChatId === chat.id ? styles.chatListItemActive : ""
+                        }`}
+                        onClick={() => {
+                            navigate(`/chatbot?chat_id=${chat.id}&view=${Date.now()}`);
+                            
+                        }}
+                        title={chat.title}
+                    >
+                        <span className={styles.chatListItemText}>
+                            {chat.title}
+                        </span>
+                    </button>
+                ))}
+            </div>
+        </div>
             </nav>
         </aside>
     );
