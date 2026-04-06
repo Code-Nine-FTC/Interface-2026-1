@@ -98,7 +98,7 @@ export default function Navbar({ pageTitle }: NavbarProps) {
                             fontSize: theme.font?.size?.lg,
                         }}
                     >
-                        {pageTitle || "Título"}
+                        {title || pageTitle || "Chatbot"}
                     </h1>
                 </Skeleton>
 
