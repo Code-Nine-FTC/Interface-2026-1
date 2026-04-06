@@ -1,0 +1,163 @@
+.sidebar {
+    position: sticky;
+    top: 0;
+    width: clamp(260px, 22vw, 340px);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1.4rem 1rem;
+    box-sizing: border-box;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+}
+
+.logoContainer {
+    margin-bottom: 1.4rem;
+}
+
+.logoContainer img {
+    width: 100%;
+    max-width: 180px;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.link svg {
+    flex-shrink: 0;
+}
+
+.link:hover {
+    opacity: 0.7;
+}
+
+.link.active {
+    font-weight: 600;
+}
+
+.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.chatsList {
+    margin-top: 0.65rem;
+    padding: 0.95rem;
+    border: 1px solid var(--shared-hr);
+    border-radius: 12px;
+    background: var(--background-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 44vh;
+    overflow-y: auto;
+}
+
+.chatsListTitle {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.1rem;
+}
+
+.chatsListEmpty {
+    font-size: var(--font-size-sm);
+    color: var(--text-light);
+}
+
+.chatListItem {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--orange-light) 35%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--orange-light) 16%, var(--background-secondary));
+    color: var(--orange-secondary);
+    text-align: left;
+    padding: 0.8rem 0.82rem;
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    line-height: 1.3;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chatListItemText {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.chatListItem:hover {
+    border-color: var(--orange-main);
+    color: var(--orange-secondary);
+    background: color-mix(in srgb, var(--orange-light) 45%, var(--background-primary));
+}
+
+.chatListItemActive {
+    border-color: var(--orange-main);
+    color: var(--orange-secondary);
+    background: color-mix(in srgb, var(--orange-light) 56%, var(--background-primary));
+    box-shadow: inset 3px 0 0 var(--orange-main);
+    font-weight: 600;
+}
+
+.chatListItem:focus-visible {
+    outline: 2px solid var(--orange-main);
+    outline-offset: 1px;
+}
+
+@media (max-width: 1200px) {
+    .sidebar {
+        width: clamp(230px, 28vw, 300px);
+    }
+
+    .chatListItem {
+        font-size: var(--font-size-sm);
+        min-height: 48px;
+        padding: 0.68rem 0.72rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: clamp(210px, 32vw, 270px);
+        padding: 1rem 0.8rem;
+    }
+
+    .chatsList {
+        max-height: 30vh;
+        padding: 0.75rem;
+    }
+
+    .chatsListTitle {
+        font-size: var(--font-size-sm);
+    }
+
+    .chatListItem {
+        font-size: var(--font-size-sm);
+        min-height: 44px;
+    }
+}

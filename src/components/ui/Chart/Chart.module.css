@@ -1,0 +1,101 @@
+.container {
+    font-family: var(--font-family);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* TOP BAR */
+.topBar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* WRAPPER DO DROPDOWN (ESSENCIAL PRA POSICIONAMENTO) */
+.dropdownWrapper {
+    position: relative;
+}
+
+.title {
+    font-size: var(--font-size-md);
+    color: var(--text-secondary);
+}
+
+/* BOTÃO */
+.dropdownButton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    border: 2px solid var(--orange-main);
+    border-radius: 0.8rem;
+    padding: 0.2rem 0.8rem;
+    cursor: pointer;
+
+    color: var(--orange-main);
+    font-size: var(--font-size-sm);
+    min-width: 180px;
+}
+
+/* LISTA (AGORA FICA EXATAMENTE EMBAIXO) */
+.dropdownList {
+    position: absolute;
+    top: 110%;
+    left: 0;
+
+    width: 100%;
+    background-color: var(--background-secondary);
+    border-radius: 0.6rem;
+    padding: 0.5rem 0;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.item:hover {
+    background-color: var(--background-textBox);
+}
+
+/* WRAPPER DO GRÁFICO */
+.chartWrapper {
+    background: var(--background-secondary);
+    border-radius: 16px;
+    padding: 16px;
+}
+
+/* GRID PRA PIE + LEGENDA */
+.pieContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+/* LEGENDA */
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+}
+
+.colorBox {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--orange-main);
+}
