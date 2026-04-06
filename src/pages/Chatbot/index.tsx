@@ -5,6 +5,7 @@ import styles from "./Chatbot.module.css";
 import { enviarMensagemChat, ChatMensagemResponse, FonteCitada, Mapa } from "../../services/chatService";
 import { useLocation } from "react-router-dom";
 import { buscarHistoricoChat, MensagemHistorico } from "../../services/chatHistoricoService";
+import { useTitle } from "../../context/TitleContext";
 
 interface Mensagem {
     id: string;
@@ -82,6 +83,7 @@ export default function Chatbot() {
     const [chatId, setChatId] = useState<string | null>(null);
     const chatRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
+    const { setTitle } = useTitle(); 
     const possuiGeoJson = Boolean(dadosMapa?.features?.length);
     const geoJsonParaRenderizar = possuiGeoJson ? dadosMapa : null;
     const queimadasLocalizacoes = dadosMapa?.features
@@ -97,59 +99,82 @@ export default function Chatbot() {
             };
         })
         .filter((item): item is { lat: number; lng: number; casos: number; nome: string } => item !== null) ?? [];
-    // Carregar histórico se chat_id vier na URL
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const chat_id = params.get("chat_id");
-        if (chat_id) {
-            setChatId(chat_id);
-            buscarHistoricoChat(chat_id)
-                .then((data: any) => {
-                    if (data && Array.isArray(data.mensagens)) {
-                        const msgs: Mensagem[] = [];
-                        data.mensagens.forEach((item: any, idx: number) => {
-                            if (item.pergunta) {
-                                msgs.push({
-                                    id: item.consulta_id + "-user",
-                                    texto: item.pergunta,
-                                    tipo: "usuario"
+                // Carregar histórico se chat_id vier na URL
+            useEffect(() => {
+                const params = new URLSearchParams(location.search);
+                const chat_id = params.get("chat_id");
+
+                // 👉 CASO 1: tem chat_id → carregar histórico
+                if (chat_id) {
+                    setChatId(chat_id);
+
+                    buscarHistoricoChat(chat_id)
+                        .then((data: any) => {
+                            if (data && Array.isArray(data.mensagens)) {
+                                const msgs: Mensagem[] = [];
+
+                                data.mensagens.forEach((item: any) => {
+                                    if (item.pergunta) {
+                                        msgs.push({
+                                            id: item.consulta_id + "-user",
+                                            texto: item.pergunta,
+                                            tipo: "usuario"
+                                        });
+                                    }
+
+                                    if (item.resposta) {
+                                        msgs.push({
+                                            id: item.consulta_id + "-bot",
+                                            texto: item.resposta,
+                                            tipo: "bot",
+                                            autor: "Atlas",
+                                            fontes: item.fontes?.length ? item.fontes : undefined,
+                                            mapa: item.mapa
+                                        });
+                                    }
                                 });
+
+                                setMensagens(msgs);
+
+                                const primeira = msgs.find(m => m.tipo === "usuario");
+
+                                if (primeira?.texto) {
+                                    setTitle(primeira.texto.slice(0, 40));
+                                } else {
+                                    setTitle("Chat");
+                                }
+
+                                const ultimaComMapa = msgs.slice().reverse().find(msg => msg.mapa);
+
+                                if (ultimaComMapa?.mapa) {
+                                    setMostrarMapa(true);
+                                    setDadosMapa(ultimaComMapa.mapa);
+                                } else {
+                                    setMostrarMapa(false);
+                                    setDadosMapa(null);
+                                }
+                            } else {
+                                setMensagens([]);
                             }
-                            if (item.resposta) {
-                                msgs.push({
-                                    id: item.consulta_id + "-bot",
-                                    texto: item.resposta,
-                                    tipo: "bot",
-                                    autor: "Atlas",
-                                    fontes: item.fontes && item.fontes.length > 0 ? item.fontes : undefined,
-                                    mapa: item.mapa
-                                });
-                            }
+
+                            setChatIniciado(true);
+                        })
+                        .catch(() => {
+                            setMensagens([]);
+                            setChatIniciado(true);
                         });
-                        setMensagens(msgs);
-                        const ultimaComMapa = msgs.slice().reverse().find(msg => msg.mapa);
-                        if (ultimaComMapa && ultimaComMapa.mapa) {
-                            setMostrarMapa(true);
-                            setDadosMapa(ultimaComMapa.mapa);
-                        } else {
-                            setMostrarMapa(false);
-                            setDadosMapa(null);
-                        }
-                    } else {
-                        setMensagens([]);
-                        setMostrarMapa(false);
-                        setDadosMapa(null);
-                    }
-                    setChatIniciado(true);
-                })
-                .catch(() => {
+
+                // 👉 CASO 2: NÃO tem chat_id → novo chat
+                } else {
+                    setChatId(null);
                     setMensagens([]);
                     setMostrarMapa(false);
                     setDadosMapa(null);
-                    setChatIniciado(true);
-                });
-        }
-    }, [location.search]);
+                    setChatIniciado(false); // volta pro welcome
+
+                    setTitle("Novo chat");
+                }
+            }, [location.search]);
 
     useEffect(() => {
         if (chatRef.current) {
