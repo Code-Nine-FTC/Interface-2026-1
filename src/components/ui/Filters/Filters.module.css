@@ -1,0 +1,181 @@
+.container {
+    font-family: var(--font-family);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+}
+
+.arrow {
+    color: var(--orange-main);
+}
+
+.title {
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+}
+
+.list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--orange-main);
+
+    width: fit-content;
+}
+
+.item label {
+    cursor: pointer;
+}
+
+.item input {
+    cursor: pointer;
+}
+
+.item input {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--orange-main);
+}
+
+.item input:checked {
+    background-color: var(--orange-main);
+}
+
+.expand {
+    margin-top: 10px;
+    font-size: var(--font-size-sm);
+    color: var(--orange-main);
+    cursor: pointer;
+}
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 10000;
+}
+
+.modal {
+    background: var(--background-primary);
+    padding: 30px;
+    border-radius: 16px;
+    width: 50%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 2%;
+}
+
+.close {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+
+.modalList {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modalItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.modalItem::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    width: 80%;
+    height: 1px;
+    background: var(--orange-light);
+
+    opacity: 0.4;
+}
+
+.editInput {
+    border: none;
+    outline: none;
+    font-size: var(--font-size-sm);
+    color: var(--orange-main);
+    background: transparent;
+    caret-color: var(--orange-main);
+
+    animation: fadeIn 0.2s ease;
+}
+
+
+.addNew {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--orange-main);
+    cursor: pointer;
+    margin-top: 2%;
+}
+
+
+.icon {
+    width: 20px;
+    height: 20px;
+    stroke: var(--orange-main);
+}
+
+
+.actions {
+    display: flex;
+    gap: 12px;
+}
+
+.actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+
+.editInput::placeholder {
+    color: var(--orange-light);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
