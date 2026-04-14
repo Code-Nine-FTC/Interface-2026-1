@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
 import styles from "./Chatbot.module.css";
-import { enviarMensagemChat, ChatMensagemResponse, FonteCitada, Mapa } from "../../services/chatService";
+import { enviarMensagemChat, feedbackChat, ChatMensagemResponse, FonteCitada, Mapa } from "../../services/chatService";
 import { useLocation } from "react-router-dom";
 import { buscarHistoricoChat, MensagemHistorico } from "../../services/chatHistoricoService";
 import { useTitle } from "../../context/TitleContext";
@@ -81,6 +81,8 @@ export default function Chatbot() {
     const [exitandoWelcome, setExitandoWelcome] = useState(false);
     const [dadosMapa, setDadosMapa] = useState<Mapa | null>(null);
     const [chatId, setChatId] = useState<string | null>(null);
+    const [feedbackEnviado, setFeedbackEnviado] = useState<Record<string, 1 | -1>>({});
+    const [feedbackDoHistorico, setFeedbackDoHistorico] = useState<Set<string>>(new Set());
     const chatRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
     const { setTitle } = useTitle(); 
@@ -113,6 +115,8 @@ export default function Chatbot() {
                             if (data && Array.isArray(data.mensagens)) {
                                 const msgs: Mensagem[] = [];
 
+                                const feedbackCarregado: Record<string, 1 | -1> = {};
+
                                 data.mensagens.forEach((item: any) => {
                                     if (item.pergunta) {
                                         msgs.push({
@@ -123,18 +127,25 @@ export default function Chatbot() {
                                     }
 
                                     if (item.resposta) {
+                                        const botId = item.resposta_id || item.consulta_id + "-bot";
                                         msgs.push({
-                                            id: item.consulta_id + "-bot",
+                                            id: botId,
                                             texto: item.resposta,
                                             tipo: "bot",
                                             autor: "Atlas",
                                             fontes: item.fontes?.length ? item.fontes : undefined,
                                             mapa: item.mapa
                                         });
+
+                                        if (item.feedback && item.feedback.avaliacao) {
+                                            feedbackCarregado[botId] = item.feedback.avaliacao;
+                                        }
                                     }
                                 });
 
                                 setMensagens(msgs);
+                                setFeedbackEnviado(feedbackCarregado);
+                                setFeedbackDoHistorico(new Set(Object.keys(feedbackCarregado)));
 
                                 const primeira = msgs.find(m => m.tipo === "usuario");
 
@@ -232,7 +243,16 @@ export default function Chatbot() {
         }
     };
 
-    // Removido processarMensagem pois agora a resposta vem do backend
+
+    const handleFeedback = async (respostaId: string, avaliacao: 1 | -1) => {
+        if (feedbackEnviado[respostaId]) return;
+        try {
+            await feedbackChat(respostaId, avaliacao);
+            setFeedbackEnviado(prev => ({ ...prev, [respostaId]: avaliacao }));
+        } catch {
+            // não bloqueia a interface
+        }
+    };
 
     return (
         <div
@@ -299,6 +319,35 @@ export default function Chatbot() {
                                                 )}
                                             </div>
                                         </div>
+                                        {msg.tipo === "bot" && msg.id && !feedbackDoHistorico.has(msg.id) && (
+                                            <div className={styles.feedbackBox}>
+                                                {feedbackEnviado[msg.id] ? (
+                                                    <span className={styles.feedbackAgradecimento}>
+                                                        Obrigado pelo feedback!
+                                                    </span>
+                                                ) : (
+                                                    <>
+                                                        <span className={styles.feedbackTexto}>
+                                                            Esta resposta foi útil?
+                                                        </span>
+                                                        <button
+                                                            className={styles.feedbackBtn}
+                                                            onClick={() => handleFeedback(msg.id, 1)}
+                                                            title="Boa resposta"
+                                                        >
+                                                            👍
+                                                        </button>
+                                                        <button
+                                                            className={styles.feedbackBtn}
+                                                            onClick={() => handleFeedback(msg.id, -1)}
+                                                            title="Resposta ruim"
+                                                        >
+                                                            👎
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                                 {digitando && (
