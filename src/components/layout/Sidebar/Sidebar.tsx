@@ -6,7 +6,7 @@ import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
 
 import { useEffect, useState } from "react";
-import { buscarChats, ChatListItem } from "../../../services/chatListService";
+import { buscarChats, excluirChat, ChatListItem } from "../../../services/chatListService";
 import { useTitle } from "../../../context/TitleContext";
 
 export default function Sidebar() {
@@ -14,6 +14,7 @@ export default function Sidebar() {
     const { isLoading } = useLoading();
 
     const [chats, setChats] = useState<ChatListItem[]>([]);
+    const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -24,6 +25,19 @@ export default function Sidebar() {
     useEffect(() => {
         buscarChats().then(setChats).catch(() => setChats([]));
     }, []);
+
+    const handleExcluirChat = async (e: React.MouseEvent, chatId: string) => {
+        e.stopPropagation();
+        try {
+            await excluirChat(chatId);
+            setChats(prev => prev.filter(c => c.id !== chatId));
+            if (currentChatId === chatId) {
+                navigate("/");
+            }
+        } catch {
+            // não bloqueia a interface
+        }
+    };
 
     const activeStyle = { color: theme.orange.secondary };
     const normalStyle = { color: theme.orange.main };
@@ -85,13 +99,25 @@ export default function Sidebar() {
                         }`}
                         onClick={() => {
                             navigate(`/chatbot?chat_id=${chat.id}&view=${Date.now()}`);
-                            
                         }}
+                        onMouseEnter={() => setHoveredChatId(chat.id)}
+                        onMouseLeave={() => setHoveredChatId(null)}
                         title={chat.title}
                     >
                         <span className={styles.chatListItemText}>
                             {chat.title}
                         </span>
+                        {hoveredChatId === chat.id && (
+                            <span
+                                className={styles.deleteBtn}
+                                onClick={(e) => handleExcluirChat(e, chat.id)}
+                                title="Excluir chat"
+                                role="button"
+                                aria-label="Excluir chat"
+                            >
+                                <TrashIcon />
+                            </span>
+                        )}
                     </button>
                 ))}
             </div>
@@ -131,5 +157,12 @@ const FilterIcon = () => (
         <path d="M15.75 33.25H26.25" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M28 8.75H38.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M33.25 14V3.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+const TrashIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6H5H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
