@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
+import ReactMarkdown from "react-markdown";
 import styles from "./Chatbot.module.css";
+import logoAtlas from "../../assets/logo.svg";
 import { enviarMensagemChat, feedbackChat, ChatMensagemResponse, FonteCitada, Mapa } from "../../services/chatService";
 import { useLocation } from "react-router-dom";
 import { buscarHistoricoChat, MensagemHistorico } from "../../services/chatHistoricoService";
@@ -83,6 +85,7 @@ export default function Chatbot() {
     const [chatId, setChatId] = useState<string | null>(null);
     const [feedbackEnviado, setFeedbackEnviado] = useState<Record<string, 1 | -1>>({});
     const [feedbackDoHistorico, setFeedbackDoHistorico] = useState<Set<string>>(new Set());
+    const [createdAt, setCreatedAt] = useState<string | null>(null);
     const chatRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
     const { setTitle } = useTitle(); 
@@ -112,6 +115,9 @@ export default function Chatbot() {
 
                     buscarHistoricoChat(chat_id)
                         .then((data: any) => {
+                            if (data.created_at) {
+                                setCreatedAt(data.created_at);
+                            }
                             if (data && Array.isArray(data.mensagens)) {
                                 const msgs: Mensagem[] = [];
 
@@ -128,13 +134,31 @@ export default function Chatbot() {
 
                                     if (item.resposta) {
                                         const botId = item.resposta_id || item.consulta_id + "-bot";
+
+                                        let mapaItem = item.mapa || undefined;
+                                        if (!mapaItem && (item.coordinates || item.coordenadas || (item.latitude && item.longitude))) {
+                                            const coords = item.coordinates || item.coordenadas || [item.longitude, item.latitude];
+                                            mapaItem = {
+                                                type: "FeatureCollection" as const,
+                                                features: [{
+                                                    type: "Feature" as const,
+                                                    geometry: { type: "Point", coordinates: coords },
+                                                    properties: {
+                                                        nome: item.nome || item.municipio || null,
+                                                        municipio: item.municipio || null,
+                                                        ...(item.properties || {})
+                                                    }
+                                                }]
+                                            };
+                                        }
+
                                         msgs.push({
                                             id: botId,
                                             texto: item.resposta,
                                             tipo: "bot",
                                             autor: "Atlas",
                                             fontes: item.fontes?.length ? item.fontes : undefined,
-                                            mapa: item.mapa
+                                            mapa: mapaItem
                                         });
 
                                         if (item.feedback && item.feedback.avaliacao) {
@@ -160,6 +184,9 @@ export default function Chatbot() {
                                 if (ultimaComMapa?.mapa) {
                                     setMostrarMapa(true);
                                     setDadosMapa(ultimaComMapa.mapa);
+                                } else if (data.mapa && data.mapa.features?.length) {
+                                    setMostrarMapa(true);
+                                    setDadosMapa(data.mapa);
                                 } else {
                                     setMostrarMapa(false);
                                     setDadosMapa(null);
@@ -182,6 +209,7 @@ export default function Chatbot() {
                     setMostrarMapa(false);
                     setDadosMapa(null);
                     setChatIniciado(false); // volta pro welcome
+                    setCreatedAt(null);
 
                     setTitle("Novo chat");
                 }
@@ -289,77 +317,104 @@ export default function Chatbot() {
                 </div>
             ) : (
                 <>
-                    <h1>Consulte Dados Ambientais</h1>
+                    <div className={styles.chatHeader}>
+                        <h1>Consulte Dados Ambientais</h1>
+                        {createdAt && (
+                            <span className={styles.chatDate}>
+                                Criado em: {new Date(createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                        )}
+                    </div>
                     <div className={styles.chatLayout}>
                         <div className={styles.chatContainer}>
                             <div className={styles.messagesArea} ref={chatRef}>
                                 {mensagens.map(msg => (
                                     <div key={msg.id}>
-                                        {msg.tipo === "bot" && msg.autor && (
-                                            <div className={styles.autorName}>{msg.autor}</div>
-                                        )}
-                                        <div className={`${styles.messageBubble} ${styles[msg.tipo]}`}>
-                                            {msg.tipo === "usuario" && (
-                                                <span className={styles.messageIcon}>👤</span>
-                                            )}
-                                            <div className={styles.messageContent}>
-                                                {msg.texto}
-                                                {/* Exibe fontes citadas se houver */}
-                                                {msg.fontes && msg.fontes.length > 0 && (
-                                                    <div className={styles.fontesCitadas}>
-                                                        <strong>Fontes consultadas:</strong>
-                                                        <ul>
-                                                            {msg.fontes.map((fonte, idx) => (
-                                                                <li key={idx}>
-                                                                    <a href={fonte.url} target="_blank" rel="noopener noreferrer">{fonte.nome}</a> ({fonte.orgao})
-                                                                </li>
-                                                            ))}
-                                                        </ul>
+                                        {msg.tipo === "bot" ? (
+                                            <div className={styles.botResponseCard}>
+                                                <div className={styles.botCardHeader}>
+                                                    <img src={logoAtlas} alt="Atlas" className={styles.botHeaderLogo} />
+                                                </div>
+                                                <div className={styles.botCardBody}>
+                                                    <div className={styles.markdownContent}>
+                                                        <ReactMarkdown>{
+                                                            msg.fontes && msg.fontes.length > 0
+                                                                ? msg.texto.replace(/\*{0,2}Fontes?\s*consultadas:?\*{0,2}[\s\S]*/i, '').trim()
+                                                                : msg.texto
+                                                        }</ReactMarkdown>
+                                                    </div>
+                                                    {msg.fontes && msg.fontes.length > 0 && (
+                                                        <div className={styles.fontesCitadas}>
+                                                            <span className={styles.fontesLabel}>📚 Fontes consultadas</span>
+                                                            <div className={styles.fontesList}>
+                                                                {msg.fontes.map((fonte, idx) => (
+                                                                    <a
+                                                                        key={idx}
+                                                                        href={fonte.url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className={styles.fonteBadge}
+                                                                    >
+                                                                        <span className={styles.fonteNome}>{fonte.nome}</span>
+                                                                        <span className={styles.fonteOrgao}>{fonte.orgao}</span>
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {msg.id && !feedbackDoHistorico.has(msg.id) && (
+                                                    <div className={styles.botCardFooter}>
+                                                        {feedbackEnviado[msg.id] ? (
+                                                            <span className={styles.feedbackAgradecimento}>
+                                                                ✓ Obrigado pelo feedback!
+                                                            </span>
+                                                        ) : (
+                                                            <>
+                                                                <span className={styles.feedbackTexto}>
+                                                                    Esta resposta foi útil?
+                                                                </span>
+                                                                <div className={styles.feedbackActions}>
+                                                                    <button
+                                                                        className={styles.feedbackBtn}
+                                                                        onClick={() => handleFeedback(msg.id, 1)}
+                                                                        title="Boa resposta"
+                                                                    >
+                                                                        👍 Sim
+                                                                    </button>
+                                                                    <button
+                                                                        className={`${styles.feedbackBtn} ${styles.feedbackBtnNeg}`}
+                                                                        onClick={() => handleFeedback(msg.id, -1)}
+                                                                        title="Resposta ruim"
+                                                                    >
+                                                                        👎 Não
+                                                                    </button>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
-                                        {msg.tipo === "bot" && msg.id && !feedbackDoHistorico.has(msg.id) && (
-                                            <div className={styles.feedbackBox}>
-                                                {feedbackEnviado[msg.id] ? (
-                                                    <span className={styles.feedbackAgradecimento}>
-                                                        Obrigado pelo feedback!
-                                                    </span>
-                                                ) : (
-                                                    <>
-                                                        <span className={styles.feedbackTexto}>
-                                                            Esta resposta foi útil?
-                                                        </span>
-                                                        <button
-                                                            className={styles.feedbackBtn}
-                                                            onClick={() => handleFeedback(msg.id, 1)}
-                                                            title="Boa resposta"
-                                                        >
-                                                            👍
-                                                        </button>
-                                                        <button
-                                                            className={styles.feedbackBtn}
-                                                            onClick={() => handleFeedback(msg.id, -1)}
-                                                            title="Resposta ruim"
-                                                        >
-                                                            👎
-                                                        </button>
-                                                    </>
-                                                )}
+                                        ) : (
+                                            <div className={`${styles.messageBubble} ${styles.usuario}`}>
+                                                <span className={styles.messageIcon}>👤</span>
+                                                <div className={styles.messageContent}>
+                                                    {msg.texto}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
                                 ))}
                                 {digitando && (
-                                    <div>
-                                        <div className={styles.autorName}>Atlas</div>
-                                        <div className={`${styles.messageBubble} ${styles.bot}`}>
-                                            <div className={styles.messageContent}>
-                                                <div className={styles.typingIndicator}>
-                                                    <span className={styles.typingDot}></span>
-                                                    <span className={styles.typingDot}></span>
-                                                    <span className={styles.typingDot}></span>
-                                                </div>
+                                    <div className={styles.botResponseCard}>
+                                        <div className={styles.botCardHeader}>
+                                            <img src={logoAtlas} alt="Atlas" className={styles.botHeaderLogo} />
+                                        </div>
+                                        <div className={styles.botCardBody}>
+                                            <div className={styles.typingIndicator}>
+                                                <span className={styles.typingDot}></span>
+                                                <span className={styles.typingDot}></span>
+                                                <span className={styles.typingDot}></span>
                                             </div>
                                         </div>
                                     </div>
