@@ -1,9 +1,24 @@
 .pageContainer {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 80px - 40px); /* 40px = padding */
   padding: 20px !important;
   gap: 15px !important;
+  overflow: hidden; 
+}
+
+.chatLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-end;
 }
 
 .pageContainer h1 {
@@ -230,16 +245,9 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--background-secondary);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--text-secondary);
-  transition: all 0.3s ease;
-}
-
-.chatContainer:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: none;
 }
 
 .messagesArea {
@@ -249,6 +257,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  padding-bottom: 25px;
 }
 
 /* Scrollbar customizado */
@@ -329,61 +339,6 @@
   justify-content: center;
   font-size: 14px;
   flex-shrink: 0;
-}
-
-.inputArea {
-  display: flex;
-  gap: 10px;
-  padding: 12px 15px;
-  border-top: 1px solid var(--text-secondary);
-  background: var(--background-secondary);
-}
-
-.input {
-  flex: 1;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--text-secondary);
-  background: var(--background-textBox);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--orange-main);
-  box-shadow: 0 0 0 3px rgba(255, 138, 36, 0.1);
-}
-
-.input::placeholder {
-  color: var(--text-secondary);
-}
-
-.sendButton {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, var(--orange-main), var(--orange-secondary));
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.sendButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.sendButton:active {
-  transform: translateY(0);
 }
 
 .mapContainer {

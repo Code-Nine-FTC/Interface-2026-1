@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
+import ChatInput from "../../components/ui/ChatInput/ChatInput";
 import ReactMarkdown from "react-markdown";
 import styles from "./Chatbot.module.css";
 import logoAtlas from "../../assets/logo.svg";
@@ -79,7 +80,7 @@ export default function Chatbot() {
     const [input, setInput] = useState("");
     const [mostrarMapa, setMostrarMapa] = useState(false);
     const [digitando, setDigitando] = useState(false);
-    const [chatIniciado, setChatIniciado] = useState(false);
+    const [chatIniciado, setChatIniciado] = useState(true);
     const [exitandoWelcome, setExitandoWelcome] = useState(false);
     const [dadosMapa, setDadosMapa] = useState<Mapa | null>(null);
     const [chatId, setChatId] = useState<string | null>(null);
@@ -291,34 +292,9 @@ export default function Chatbot() {
                 fontFamily: "var(--font-family)"
             }}
         >
-            {!chatIniciado ? (
-                <div className={`${styles.welcomeContainer} ${exitandoWelcome ? styles.exiting : ''}`}>
-                    <div className={styles.welcomeContent}>
-                        <h1 className={styles.welcomeTitle}>Atlas</h1>
-                        <p className={styles.welcomeText}>Seja bem-vindo ao Atlas, o que procura?</p>
-                        <div className={styles.welcomeInputArea}>
-                            <input
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyPress={(e) => e.key === "Enter" && handleEnviarMensagem()}
-                                placeholder="Digite: queimadas, poluição ou quilombo..."
-                                className={styles.welcomeInput}
-                                autoFocus
-                            />
-                            <button
-                                onClick={handleEnviarMensagem}
-                                className={styles.welcomeSendButton}
-                            >
-                                ➤ Enviar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ) : (
-                <>
+            <>
+                
                     <div className={styles.chatHeader}>
-                        <h1>Consulte Dados Ambientais</h1>
                         {createdAt && (
                             <span className={styles.chatDate}>
                                 Criado em: {new Date(createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -422,22 +398,11 @@ export default function Chatbot() {
                             </div>
 
                             {/* Input */}
-                            <div className={styles.inputArea}>
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyPress={(e) => e.key === "Enter" && handleEnviarMensagem()}
-                                    placeholder="Digite: queimadas, poluição ou quilombo..."
-                                    className={styles.input}
+                            <ChatInput
+                                value={input}
+                                onChange={setInput}
+                                onSend={handleEnviarMensagem}
                                 />
-                                <button
-                                    onClick={handleEnviarMensagem}
-                                    className={styles.sendButton}
-                                >
-                                    ➤ Enviar
-                                </button>
-                            </div>
                         </div>
                         {mostrarMapa && dadosMapa && (
                             <div className={styles.mapContainer}>
@@ -451,7 +416,7 @@ export default function Chatbot() {
                         )}
                     </div>
                 </>
-            )}
+            
         </div>
     );
 }

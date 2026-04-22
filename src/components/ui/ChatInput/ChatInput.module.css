@@ -1,0 +1,78 @@
+.inputArea {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: var(--background-secondary);
+  border: 1px solid var(--orange-main);
+  border-radius: 12px;
+  gap: 10px;
+  margin-top: auto;
+  transition: all 0.25s ease;
+}
+
+.input {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 8px 12px;
+  font-family: inherit;
+  line-height: 1.5;
+  height: 36px;
+  overflow: hidden;
+  transition: height 0.25s ease;
+}
+
+.input::placeholder {
+  color: var(--orange-light);
+}
+
+.expanded {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.expanded .input {
+  height: 15vh;
+  min-height: 120px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.expanded .input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.expanded .input::-webkit-scrollbar-thumb {
+  background: var(--orange-main);
+  border-radius: 10px;
+}
+
+.expanded .input::-webkit-scrollbar-thumb:hover {
+  background: var(--orange-secondary);
+}
+
+.sendButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--orange-main);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.expanded .sendButton {
+  align-self: flex-end;
+}
+
+.sendButton:hover {
+  transform: scale(1.05);
+}
