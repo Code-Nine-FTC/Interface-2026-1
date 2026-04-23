@@ -2,13 +2,20 @@
 
 import type { Mapa } from "./chatService";
 
+export interface FeedbackHistorico {
+  id: string;
+  avaliacao: 1 | -1;
+}
+
 export interface MensagemHistorico {
   consulta_id: string;
+  resposta_id?: string;
   pergunta?: string;
   resposta?: string;
   turno?: number;
   fontes?: Array<{ nome: string; orgao: string; url: string }>;
   mapa?: Mapa | null;
+  feedback?: FeedbackHistorico | null;
   coordinates?: unknown;
   coordenadas?: unknown;
   latitude?: unknown;
@@ -21,7 +28,11 @@ export interface MensagemHistorico {
 export interface HistoricoChatResponse {
   chat_id: string;
   title?: string;
+  created_at?: string;
   mensagens: MensagemHistorico[];
+  mapa?: Mapa | null;
+  bbox?: number[];
+  status?: string;
 }
 
 export async function buscarHistoricoChat(chat_id: string): Promise<HistoricoChatResponse> {
