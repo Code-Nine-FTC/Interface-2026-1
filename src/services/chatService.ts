@@ -63,3 +63,19 @@ export async function enviarMensagemChat(
   console.log("Retorno do backend:", data);
   return data;
 }
+
+export async function feedbackChat(
+  resposta_sistema_id: string,
+  avaliacao: 1 | -1
+): Promise<void> {
+  const response = await fetch("http://127.0.0.1:5000/chat/feedback", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ resposta_sistema_id, avaliacao }),
+  });
+  if (!response.ok) {
+    throw new Error("Erro ao enviar feedback para o backend");
+  }
+}
