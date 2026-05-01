@@ -46,49 +46,32 @@
   white-space: nowrap;
 }
 
-/* Bot response card */
-.botResponseCard {
-  animation: slideIn 0.3s ease;
-  border-radius: 16px;
-  background: var(--background-textBox);
-  border: 1px solid var(--text-secondary);
-  overflow: hidden;
-  transition: box-shadow 0.2s ease;
-  max-width: 85%;
-  width: fit-content;
-  min-width: 280px;
-}
 
-.botResponseCard:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.botCardHeader {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--text-secondary);
-  background: var(--background-secondary);
-}
-
-.botHeaderLogo {
-  height: 28px;
-  object-fit: contain;
-}
-
-.botCardBody {
-  padding: 16px 18px;
-}
-
-/* Markdown content styling */
 .markdownContent {
   line-height: 1.7;
-  font-size: 14px;
   color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.markdownContent p:first-child {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .markdownContent p {
-  margin: 0 0 10px 0;
+  font-size: var(--font-size-sm);
+  margin-bottom: 8px;
+}
+
+.markdownContent a {
+  color: var(--orange-main);
+  text-decoration: none;
+  border-bottom: 1px solid var(--orange-main);
+}
+
+.markdownContent a:hover {
+  opacity: 0.8;
 }
 
 .markdownContent p:last-child {
@@ -120,18 +103,7 @@
   color: var(--orange-main);
 }
 
-.markdownContent a {
-  color: var(--orange-main);
-  text-decoration: none;
-  border-bottom: 1px dashed var(--orange-main);
-  word-break: break-all;
-  transition: all 0.2s ease;
-}
 
-.markdownContent a:hover {
-  border-bottom-style: solid;
-  opacity: 0.85;
-}
 
 .markdownContent h1,
 .markdownContent h2,
@@ -302,10 +274,20 @@
   justify-content: flex-end;
 }
 
-.messageBubble.usuario .messageIcon {
-  order: 2;
-}
+.messageBubble.usuario .messageContent::after {
+  content: "";
+  position: absolute;
 
+  right: 10px;
+  bottom: -6px;
+
+  width: 0;
+  height: 0;
+
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--background-textBox);
+}
 .messageBubble.usuario .messageContent {
   order: 1;
 }
@@ -316,30 +298,33 @@
 
 .messageContent {
   max-width: 75%;
-  padding: 11px 18px;
-  border-radius: 18px;
+  padding: 12px 16px;
+  border-radius: 14px;
   word-wrap: break-word;
   line-height: 1.5;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  background: linear-gradient(135deg, var(--orange-main), var(--orange-secondary));
-  color: #fff;
-  border-bottom-right-radius: 4px;
-  box-shadow: 0 2px 10px rgba(255, 138, 36, 0.2);
+
+  background: var(--background-textBox);
+  color: var(--text-primary);
+
+  position: relative;
 }
 
-.messageIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--background-textBox);
-  border: 1px solid var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
+.messageBubble.usuario .messageContent::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  bottom: 8px;
+
+  width: 0;
+  height: 0;
+
+  border-left: 8px solid var(--background-textBox);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
 }
+
 
 .mapContainer {
   height: 100%;
@@ -397,16 +382,10 @@
   }
 }
 
-/* Responsividade */
 
-/* Feedback footer inside bot card */
 .botCardFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 18px;
-  border-top: 1px dashed var(--text-secondary);
-  gap: 12px;
+  border: none;
+  padding: 8px 0;
 }
 
 .feedbackTexto {
@@ -421,29 +400,22 @@
 }
 
 .feedbackBtn {
-  background: var(--background-secondary);
-  border: 1px solid var(--text-secondary);
-  border-radius: 20px;
+  background: transparent;
+  border: none;
+  padding: 0;
   cursor: pointer;
+
   font-size: 12px;
-  font-weight: 600;
-  padding: 5px 14px;
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-  line-height: 1.4;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-weight: 500;
+  color: var(--orange-light);
+
+  transition: color 0.2s ease;
 }
 
 .feedbackBtn:hover {
-  border-color: var(--orange-main);
   color: var(--orange-main);
-  background: rgba(255, 138, 36, 0.06);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
+
 
 .feedbackBtn:active {
   transform: translateY(0);

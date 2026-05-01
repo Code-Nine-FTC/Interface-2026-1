@@ -308,9 +308,7 @@ export default function Chatbot() {
                                     <div key={msg.id}>
                                         {msg.tipo === "bot" ? (
                                             <div className={styles.botResponseCard}>
-                                                <div className={styles.botCardHeader}>
-                                                    <img src={logoAtlas} alt="Atlas" className={styles.botHeaderLogo} />
-                                                </div>
+                                               
                                                 <div className={styles.botCardBody}>
                                                     <div className={styles.markdownContent}>
                                                         <ReactMarkdown>{
@@ -356,14 +354,14 @@ export default function Chatbot() {
                                                                         onClick={() => handleFeedback(msg.id, 1)}
                                                                         title="Boa resposta"
                                                                     >
-                                                                        👍 Sim
+                                                                        Sim
                                                                     </button>
                                                                     <button
                                                                         className={`${styles.feedbackBtn} ${styles.feedbackBtnNeg}`}
                                                                         onClick={() => handleFeedback(msg.id, -1)}
                                                                         title="Resposta ruim"
                                                                     >
-                                                                        👎 Não
+                                                                        Não
                                                                     </button>
                                                                 </div>
                                                             </>
@@ -373,7 +371,6 @@ export default function Chatbot() {
                                             </div>
                                         ) : (
                                             <div className={`${styles.messageBubble} ${styles.usuario}`}>
-                                                <span className={styles.messageIcon}>👤</span>
                                                 <div className={styles.messageContent}>
                                                     {msg.texto}
                                                 </div>

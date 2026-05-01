@@ -2,6 +2,9 @@ merger.txt
 merger.json
 merger.ignore
 
+package-lock.json
+README.md
+
 .git/
 
 node_modules/
