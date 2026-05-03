@@ -1,0 +1,254 @@
+.botResponseCard {
+  background: transparent;
+  width: 100%;
+}
+
+.messageBubble {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.messageBubble.usuario {
+  justify-content: flex-end;
+  padding-left: 20%;
+}
+
+.messageBubble.usuario .messageContent {
+  background: var(--background-textBox);
+  color: var(--text-primary);
+  border-radius: 18px 18px 4px 18px;
+  font-weight: var(--font-weight-medium);
+  border: none;
+}
+
+.messageBubble.bot {
+  justify-content: flex-start;
+  padding-right: 15%;
+}
+
+.messageContent {
+  padding: 14px 20px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.markdownContent {
+  line-height: 1.7;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.markdownContent p:first-child {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.markdownContent p {
+  font-size: var(--font-size-sm);
+  margin-bottom: 8px;
+}
+
+.markdownContent a {
+  color: var(--orange-main);
+  text-decoration: none;
+  border-bottom: 1px solid var(--orange-main);
+}
+
+.markdownContent a:hover {
+  opacity: 0.8;
+}
+
+.markdownContent p:last-child {
+  margin-bottom: 0;
+}
+
+.markdownContent strong {
+  font-weight: 700;
+  color: var(--orange-main);
+}
+
+.markdownContent em {
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.markdownContent ul,
+.markdownContent ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+
+.markdownContent li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.markdownContent li::marker {
+  color: var(--orange-main);
+}
+
+.markdownContent h1,
+.markdownContent h2,
+.markdownContent h3 {
+  margin: 14px 0 8px 0;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.markdownContent h1 { font-size: 1.3em; }
+.markdownContent h2 { font-size: 1.15em; }
+.markdownContent h3 { font-size: 1.05em; }
+
+.markdownContent code {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.88em;
+  font-family: 'Courier New', monospace;
+}
+
+.markdownContent blockquote {
+  border-left: 3px solid var(--orange-main);
+  margin: 10px 0;
+  padding: 6px 14px;
+  background: rgba(255, 138, 36, 0.05);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+}
+
+.markdownContent hr {
+  border: none;
+  border-top: 1px solid var(--text-secondary);
+  margin: 12px 0;
+}
+
+.fontesCitadas {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--text-secondary);
+}
+
+.fontesLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.fontesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fonteBadge {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--background-secondary);
+  border: 1px solid var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.fonteBadge:hover {
+  border-color: var(--orange-main);
+  background: rgba(255, 138, 36, 0.06);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+.fonteNome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--orange-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fonteOrgao {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.botCardFooter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  padding: 8px 0;
+}
+
+.feedbackTexto {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.feedbackActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feedbackBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--orange-light);
+  opacity: 0.85;
+  transition: all 0.2s ease;
+}
+
+.feedbackBtn:hover,
+.feedbackBtnNeg:hover {
+  opacity: 1;
+  color: var(--orange-main);
+}
+
+.feedbackAgradecimento {
+  font-size: 12px;
+  color: var(--orange-main);
+  font-weight: 500;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .messageContent {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .messageContent {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+}
