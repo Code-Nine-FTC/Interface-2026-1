@@ -35,7 +35,7 @@ export default function Sidebar() {
                 navigate("/");
             }
         } catch {
-            // não bloqueia a interface
+           
         }
     };
 
@@ -127,7 +127,6 @@ export default function Sidebar() {
     );
 }
 
-// Icons (Mantidos como no original)
 const ChatbotIcon = () => (
     <svg width="24" height="24" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M38.5 29.75C38.5 30.6783 38.1313 31.5685 37.4749 32.2249C36.8185 32.8813 35.9283 33.25 35 33.25H11.949C11.0208 33.2502 10.1307 33.6191 9.4745 34.2755L5.621 38.129C5.44723 38.3027 5.22586 38.421 4.98486 38.469C4.74386 38.5169 4.49405 38.4923 4.26704 38.3983C4.04002 38.3042 3.84598 38.145 3.70945 37.9407C3.57292 37.7364 3.50003 37.4962 3.5 37.2505V8.75C3.5 7.82174 3.86875 6.9315 4.52513 6.27513C5.1815 5.61875 6.07174 5.25 7 5.25H35C35.9283 5.25 36.8185 5.61875 37.4749 6.27513C38.1313 6.9315 38.5 7.82174 38.5 8.75V29.75Z" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
@@ -161,7 +160,7 @@ const FilterIcon = () => (
 );
 
 const TrashIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M3 6H5H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
