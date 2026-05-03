@@ -172,12 +172,12 @@
     align-items: center;
     justify-content: center;
     padding: 4px;
-    border-radius: 6px;
-    color: var(--text-secondary);
+    color: var(--orange-main);
     transition: color 0.2s ease, background 0.2s ease;
 }
 
+
 .deleteBtn:hover {
-    color: #e53e3e;
-    background: color-mix(in srgb, #e53e3e 12%, transparent);
+    color: var(--orange-secondary);
+    border-radius: 4px;
 }
