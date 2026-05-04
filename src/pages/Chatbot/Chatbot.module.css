@@ -1,5 +1,4 @@
 .pageContainer {
-  /* Removido min-height: 100vh fixo para evitar scroll precoce */
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -13,7 +12,6 @@
   grid-template-columns: 1fr;
   gap: 20px;
   margin: 0 auto;
-  /* Removido flex: 1 e min-height: 0 para o conteúdo ditar a altura */
   transition: grid-template-columns 0.3s ease;
 }
 

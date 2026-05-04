@@ -6,19 +6,26 @@ export type ChartDataItem = {
 };
 
 export function buildChartData(region: RegionData): ChartDataItem[] {
-    const indicators = region.indicators ?? {};
+    const indicators = region.indicators ?? {
+        queimadas: false,
+        terrasIndigenas: false,
+        unidadesConservacao: false,
+        quilombolas: false,
+        assentamentos: false
+    };
+
 
     return [
         {
-            name: "Queimadas (INPE)",
+            name: "Queimadas",
             value: region.burnedOccurrences ?? 0,
         },
         {
-            name: "Terras indígenas",
+            name: "T. Indígenas",
             value: indicators.terrasIndigenas ? 1 : 0,
         },
         {
-            name: "Unidades de conservação",
+            name: "U. Conservação",
             value: indicators.unidadesConservacao ? 1 : 0,
         },
         {
