@@ -320,11 +320,10 @@ export default function Chatbot() {
                         )}
                     </div>
 
-                    {/* INPUT (POSIÇÃO DINÂMICA) */}
+                
                     <div className={`
                         ${styles.chatInputContainer} 
                         ${!chatIniciado ? styles.welcomeInput : ""} 
-                        ${mostrarMapa && dadosMapa ? styles.withMap : ""}
                     `}>
                         <ChatInput
                             value={input}
