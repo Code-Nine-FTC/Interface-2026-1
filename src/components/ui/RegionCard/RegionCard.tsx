@@ -25,13 +25,13 @@ export default function RegionCard({ data }: Props) {
 
     const indicators = data.indicators ?? {};
 
-    const indicatorList = [
+const indicatorList = [
         { label: "Queimadas (INPE)", value: indicators.queimadas },
         { label: "Terras indígenas", value: indicators.terrasIndigenas },
         { label: "Unidades de conservação", value: indicators.unidadesConservacao },
         { label: "Quilombolas", value: indicators.quilombolas },
         { label: "Assentamentos", value: indicators.assentamentos },
-    ].filter(item => item.value);
+    ].filter(item => item.value === true || (typeof item.value === 'number' && item.value > 0));
 
     const score = data.score ?? 0;
 

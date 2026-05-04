@@ -35,6 +35,10 @@ export interface MunicipalityFeature {
         nome: string;
         codigo_ibge: string;
         estado_sigla: string;
+        terras_indigenas?: any[]; 
+        quilombolas?: any[];
+        unidades_conservacao?: any[];
+        assentamentos?: any[];
     };
 }
 
@@ -148,27 +152,33 @@ function extractMunicipalityMetrics(payload: unknown): MunicipalityMetricItem[] 
 }
 
 function normalizeIndicators(raw: Record<string, unknown>): RegionData["indicators"] {
-    const indicatorsSource =
-        (raw.indicators as Record<string, unknown> | undefined) ??
-        (raw.indicadores as Record<string, unknown> | undefined) ??
-        raw;
+    const indicatorsSource = (raw.indicators as Record<string, unknown>) ?? raw;
 
     return {
-        queimadas: toBoolean(indicatorsSource.queimadas ?? raw.queimadas),
+        
+        queimadas: toBoolean(indicatorsSource.queimadas ?? raw.burnedOccurrences) ?? false,
+        
         terrasIndigenas: toBoolean(
-            indicatorsSource.terrasIndigenas ??
-                indicatorsSource.terras_indigenas ??
-                raw.terrasIndigenas ??
-                raw.terras_indigenas
-        ),
+            indicatorsSource.terrasIndigenas ?? 
+            indicatorsSource.terras_indigenas ?? 
+            (Array.isArray(raw.terras_indigenas) && raw.terras_indigenas.length > 0)
+        ) ?? false,
+
         unidadesConservacao: toBoolean(
-            indicatorsSource.unidadesConservacao ??
-                indicatorsSource.unidades_conservacao ??
-                raw.unidadesConservacao ??
-                raw.unidades_conservacao
-        ),
-        quilombolas: toBoolean(indicatorsSource.quilombolas ?? raw.quilombolas),
-        assentamentos: toBoolean(indicatorsSource.assentamentos ?? raw.assentamentos),
+            indicatorsSource.unidadesConservacao ?? 
+            indicatorsSource.unidades_conservacao ?? 
+            (Array.isArray(raw.unidades_conservacao) && raw.unidades_conservacao.length > 0)
+        ) ?? false,
+
+        quilombolas: toBoolean(
+            indicatorsSource.quilombolas ?? 
+            (Array.isArray(raw.quilombolas) && raw.quilombolas.length > 0)
+        ) ?? false,
+
+        assentamentos: toBoolean(
+            indicatorsSource.assentamentos ?? 
+            (Array.isArray(raw.assentamentos) && raw.assentamentos.length > 0)
+        ) ?? false,
     };
 }
 
@@ -353,6 +363,24 @@ function getRiskFromFireCount(fireCount: number): RegionData["risk"] {
     return "baixo";
 }
 
+export async function fetchFullMunicipalityData(id: string | number): Promise<ResponseMunicipal | null> {
+    try {
+        const url = `http://127.0.0.1:5000/municipal/${id}`;
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const json = await response.json();
+        const dataArray = json.data || json; 
+        if (Array.isArray(dataArray) && dataArray.length > 0) {
+            return dataArray[0];
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Erro ao buscar detalhes do município:", error);
+        return null;
+    }
+}
+
 export function getMunicipalityFireCount(
     municipalityName: string,
     metrics: MunicipalityMetricItem[]
@@ -372,22 +400,42 @@ export function getMunicipalityFireCount(
 }
 
 export function mapMunicipalToRegionData(
-    region: MunicipalityFeature,
+    region: MunicipalityFeature | ResponseMunicipal, 
     fireCount = 0
 ): RegionData {
     const score = getScoreFromFireCount(fireCount);
 
+   
+    if ('terras_indigenas' in region) {
+        return {
+            id: String(region.id),
+            name: region.nome,
+            areaKm2: 0, 
+            burnedOccurrences: fireCount,
+            indicators: {
+                queimadas: fireCount > 0,
+                terrasIndigenas: region.terras_indigenas?.length > 0,
+                unidadesConservacao: region.unidades_conservacao?.length > 0,
+                quilombolas: region.quilombolas?.length > 0,
+                assentamentos: region.assentamentos?.length > 0,
+            },
+            score,
+            risk: getRiskFromFireCount(fireCount),
+        };
+    }
+
+    const props = region.properties;
     return {
-        id: region.properties.id,
-        name: region.properties.nome,
+        id: props.id,
+        name: props.nome,
         areaKm2: geometryAreaKm2(region.geometry),
         burnedOccurrences: fireCount,
         indicators: {
             queimadas: fireCount > 0,
-            terrasIndigenas: false,
-            unidadesConservacao: false,
-            quilombolas: false,
-            assentamentos: false,
+            terrasIndigenas: Array.isArray(props.terras_indigenas) && props.terras_indigenas.length > 0,
+            unidadesConservacao: Array.isArray(props.unidades_conservacao) && props.unidades_conservacao.length > 0,
+            quilombolas: Array.isArray(props.quilombolas) && props.quilombolas.length > 0,
+            assentamentos: Array.isArray(props.assentamentos) && props.assentamentos.length > 0,
         },
         score,
         risk: getRiskFromFireCount(fireCount),
