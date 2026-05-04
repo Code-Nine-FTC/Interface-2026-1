@@ -3,16 +3,26 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    height: 100%; 
+    width: 100%;
 }
 
-/* TOP BAR */
 .topBar {
     display: flex;
     align-items: center;
+    justify-content: space-between; 
     gap: 12px;
+    flex-shrink: 0; 
 }
 
-/* WRAPPER DO DROPDOWN (ESSENCIAL PRA POSICIONAMENTO) */
+.chartArea {
+    flex: 1; 
+    width: 100%;
+    min-height: 0; 
+    display: flex;
+    flex-direction: column;
+}
+
 .dropdownWrapper {
     position: relative;
 }
@@ -22,34 +32,34 @@
     color: var(--text-secondary);
 }
 
-/* BOTÃO */
 .dropdownButton {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-
-    border: 2px solid var(--orange-main);
-    border-radius: 0.8rem;
-    padding: 0.2rem 0.8rem;
+    gap: 12px;
+    border: 1px solid var(--orange-main);
+    border-radius: 8px;
+    padding: 6px 16px;
     cursor: pointer;
-
     color: var(--orange-main);
-    font-size: var(--font-size-sm);
+    font-size: 0.9rem;
     min-width: 180px;
+    background: transparent;
+    transition: all 0.2s;
 }
 
-/* LISTA (AGORA FICA EXATAMENTE EMBAIXO) */
+.dropdownButton:hover {
+    background: rgba(255, 122, 0, 0.05);
+}
+
 .dropdownList {
     position: absolute;
     top: 110%;
     left: 0;
-
     width: 100%;
     background-color: var(--background-secondary);
     border-radius: 0.6rem;
     padding: 0.5rem 0;
-
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     z-index: 10;
 }
@@ -64,38 +74,40 @@
     background-color: var(--background-textBox);
 }
 
-/* WRAPPER DO GRÁFICO */
-.chartWrapper {
-    background: var(--background-secondary);
-    border-radius: 16px;
-    padding: 16px;
-}
-
-/* GRID PRA PIE + LEGENDA */
-.pieContainer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-}
-
-/* LEGENDA */
 .legend {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    margin-top: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .legendItem {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: var(--text-secondary);
+    white-space: nowrap;
 }
 
 .colorBox {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
-    background: var(--orange-main);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%; 
+    flex-shrink: 0;
+}
+
+.arrowDown, .arrowUp {
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+}
+
+.arrowUp {
+    transform: rotate(180deg);
+}
+
+.loading {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
 }
