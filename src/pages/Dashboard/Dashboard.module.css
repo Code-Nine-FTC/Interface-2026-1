@@ -29,11 +29,9 @@
     flex-direction: row;
     gap: 2rem;
     width: 100%;
-    /* Altura reduzida para 400px conforme solicitado */
     height: 400px; 
 }
 
-/* Gráfico com 60% */
 .chartWrapper {
     flex: 6; 
     background: var(--background-secondary);
@@ -45,7 +43,7 @@
     padding: 1rem;
 }
 
-/* Mapa com 40% */
+
 .mapWrapper {
     flex: 4;
     border-radius: 12px;
