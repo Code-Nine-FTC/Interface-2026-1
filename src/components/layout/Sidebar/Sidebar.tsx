@@ -47,9 +47,15 @@ export default function Sidebar() {
     { to: "/dashboard", label: "Dashboard", icon: <DashboardIcon />, disabled: false },
 ];
 
+    const handleLogoClick = () => {
+        navigate("/", { replace: true });
+        setTitle("Chatbot");
+        setChats([]);
+    };
+
     return (
         <aside className={styles.sidebar} style={{ background: theme.background.secondary }}>
-            <div className={styles.logoContainer}>
+            <div className={styles.logoContainer} onClick={handleLogoClick} style={{ cursor: "pointer" }}>
                 <Skeleton isLoading={isLoading} variant="rectangular">
                     <img src={logo} alt="Logo" />
                 </Skeleton>

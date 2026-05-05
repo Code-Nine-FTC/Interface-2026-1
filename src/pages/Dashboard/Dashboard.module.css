@@ -1,64 +1,120 @@
 .container {
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: 2rem;
     padding: 1.5rem;
 }
 
-.section {
+.topSection {
     display: flex;
-    flex-direction: column;
-}
-
-.sectionTitleMain {
-    color: var(--orange-main);
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 1.5rem 0;
-}
-
-.sectionTitleSecondary {
-    color: var(--text-primary);
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin: 1rem 0 1.5rem 0;
-}
-
-.mainContent {
-    display: flex;
-    flex-direction: row;
-    gap: 2rem;
     width: 100%;
-    height: 400px; 
 }
 
-.chartWrapper {
-    flex: 6; 
-    background: var(--background-secondary);
-    border-radius: 12px;
+.filtersWrapper {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-    padding: 1rem;
+    gap: 1rem;
 }
 
+.metricsTitle {
+    font-size: var(--font-size-lg);
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    margin-top: 2%;
+}
 
-.mapWrapper {
-    flex: 4;
-    border-radius: 12px;
-    overflow: hidden;
+.rankingSelector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.rankingSelector label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.rankingSelector select {
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
     background: var(--background-secondary);
-    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
 }
 
-@media (max-width: 1024px) {
-    .mainContent {
-        flex-direction: column;
-        height: auto;
+.rankingSelector select:hover {
+    border-color: var(--border-hover);
+}
+
+.rankingTable {
+    margin-top: 2rem;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.rankingTable h3 {
+    font-size: var(--font-size-md);
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-transform: capitalize;
+}
+
+.rankingTable table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+}
+
+.rankingTable thead {
+    background: var(--background-tertiary);
+    position: sticky;
+    top: 0;
+}
+
+.rankingTable thead th {
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.rankingTable tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+}
+
+.rankingTable tbody tr:hover {
+    background-color: var(--background-tertiary);
+}
+
+.rankingTable tbody td {
+    padding: 0.75rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        gap: 1rem;
     }
-    .mapWrapper, .chartWrapper {
-        min-height: 350px;
-        flex: none;
+
+    .rankingTable {
+        max-height: 300px;
+    }
+
+    .rankingTable table {
+        font-size: var(--font-size-xs);
+    }
+
+    .rankingTable thead th,
+    .rankingTable tbody td {
+        padding: 0.5rem;
     }
 }

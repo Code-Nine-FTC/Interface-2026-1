@@ -76,3 +76,52 @@
 .sendButton:hover {
   transform: scale(1.05);
 }
+
+@media (max-width: 768px) {
+  .inputArea {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .input {
+    font-size: 13px;
+    padding: 6px 10px;
+    height: 32px;
+  }
+  
+  .expanded .input {
+    height: 12vh;
+    min-height: 100px;
+    max-height: 150px;
+  }
+  
+  .sendButton {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .inputArea {
+    padding: 6px;
+    gap: 6px;
+  }
+  
+  .input {
+    font-size: 13px;
+    padding: 6px 8px;
+    height: 32px;
+  }
+  
+  .expanded .input {
+    height: 10vh;
+    min-height: 80px;
+    max-height: 120px;
+  }
+  
+  .sendButton {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+}

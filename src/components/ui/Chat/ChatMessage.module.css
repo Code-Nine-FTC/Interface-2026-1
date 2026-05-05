@@ -23,7 +23,7 @@
 
 .messageBubble.usuario {
   justify-content: flex-end;
-  padding-left: 20%;
+  padding-left: clamp(10%, 15%, 20%);
 }
 
 .messageBubble.usuario .messageContent {
@@ -36,7 +36,7 @@
 
 .messageBubble.bot {
   justify-content: flex-start;
-  padding-right: 15%;
+  padding-right: clamp(10%, 12%, 15%);
 }
 
 .messageContent {
@@ -247,6 +247,29 @@
 }
 
 @media (max-width: 768px) {
+  .messageContent {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+  
+  .messageBubble.usuario {
+    padding-left: 5%;
+  }
+  
+  .messageBubble.bot {
+    padding-right: 5%;
+  }
+}
+
+@media (max-width: 480px) {
+  .messageBubble.usuario {
+    padding-left: 0;
+  }
+  
+  .messageBubble.bot {
+    padding-right: 0;
+  }
+  
   .messageContent {
     font-size: 13px;
     padding: 10px 12px;

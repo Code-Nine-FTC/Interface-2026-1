@@ -10,7 +10,6 @@ export default function AppRoutes() {
             <Layout>
                 <Routes>
                     <Route path="/" element={<Chatbot />} />
-                    <Route path="/chatbot" element={<Chatbot />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                 </Routes>
             </Layout>

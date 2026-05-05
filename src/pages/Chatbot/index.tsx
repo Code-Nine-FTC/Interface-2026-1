@@ -195,10 +195,20 @@ export default function Chatbot() {
     }, [location.search]);
 
     useEffect(() => {
-        if (chatRef.current) {
-            chatRef.current.scrollTop = chatRef.current.scrollHeight;
-        }
-    }, [mensagens]);
+        const scrollToBottom = () => {
+            if (chatRef.current) {
+                chatRef.current.scrollTop = chatRef.current.scrollHeight;
+            }
+        };
+
+        // Scroll imediato
+        scrollToBottom();
+        
+        // Scroll após a animação das mensagens terminar (0.3s)
+        const timer = setTimeout(scrollToBottom, 350);
+        
+        return () => clearTimeout(timer);
+    }, [mensagens, digitando]);
 
     const handleEnviarMensagem = async () => {
         if (!input.trim()) return;
@@ -269,7 +279,6 @@ export default function Chatbot() {
                 
                 <div className={styles.chatContainer}>
                     
-                    {/* TELA DE BOAS-VINDAS (FIXA E CENTRALIZADA) */}
                     {!chatIniciado && (
                     <div className={`${styles.welcomeArea} ${exitandoWelcome ? styles.fadeOut : ""}`}>
                         <div className={styles.welcomeContent}>
