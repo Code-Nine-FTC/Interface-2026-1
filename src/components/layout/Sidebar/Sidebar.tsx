@@ -23,7 +23,7 @@ export default function Sidebar() {
     const currentChatId = new URLSearchParams(location.search).get("chat_id");
 
     const refreshChats = () => {
-        buscarChats().then(setChats).catch(() => setChats([]));
+        buscarChats().then((data) => setChats([...data].reverse())).catch(() => setChats([]));
     };
 
     useEffect(() => {
