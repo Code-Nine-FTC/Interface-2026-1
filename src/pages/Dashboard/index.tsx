@@ -57,26 +57,6 @@ export default function Dashboard() {
         };
     }, []);
 
-    const searchItems = useMemo((): SearchItem[] => {
-        if (!stateDashboard) return [];
-
-        const allMunicipalities = new Map<string, RankingItem>();
-        
-        Object.values(stateDashboard.data.rankings).forEach((ranking: RankingItem[]) => {
-            ranking.forEach((item: RankingItem) => {
-                const key = `${item.municipio}-${item.uf}`;
-                if (!allMunicipalities.has(key)) {
-                    allMunicipalities.set(key, item);
-                }
-            });
-        });
-
-        return Array.from(allMunicipalities.values()).map((municipality) => ({
-            id: municipality.municipio,
-            label: `${municipality.municipio} - ${municipality.uf}`,
-            meta: municipality,
-        }));
-    }, [stateDashboard]);
 
     const selectedRegion = useMemo(() => {
         if (!stateDashboard) return null;
@@ -114,11 +94,11 @@ export default function Dashboard() {
 
             <div className={styles.topSection}>
                 <div className={styles.filtersWrapper}>
-                    {selectedRegion && <RegionCard data={selectedRegion} />}
+                    {/* {selectedRegion && <RegionCard data={selectedRegion} />}
 
                     <h2 className={styles.metricsTitle}>
                         Métricas da região:
-                    </h2>
+                    </h2> */}
 
                     <div className={styles.rankingSelector}>
                         <label htmlFor="ranking-select">Tipo de ranking:</label>

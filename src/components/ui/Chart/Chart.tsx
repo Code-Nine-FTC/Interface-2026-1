@@ -14,14 +14,14 @@ type Props = {
     title?: string;
 };
 
-type ChartType = "bar" | "pie" | "line" | "area";
+type ChartType = "bar";
 
-const chartOptions = [
-    { label: "Gráfico de Barra", value: "bar" },
-    { label: "Gráfico de Pizza", value: "pie" },
-    { label: "Gráfico de Linha", value: "line" },
-    { label: "Gráfico de Área", value: "area" },
-];
+// const chartOptions = [
+//     { label: "Gráfico de Barra", value: "bar" },
+//     { label: "Gráfico de Pizza", value: "pie" },
+//     { label: "Gráfico de Linha", value: "line" },
+//     { label: "Gráfico de Área", value: "area" },
+// ];
 
 const PIE_COLORS = [
     "var(--orange-main)",
@@ -36,7 +36,7 @@ export default function Chart({ region, data: externalData, loading, title = "M�
     const [chartType, setChartType] = useState<ChartType>("bar");
     const [isOpen, setIsOpen] = useState(false);
 
-    const selectedLabel = chartOptions.find((o) => o.value === chartType)?.label;
+    // const selectedLabel = chartOptions.find((o) => o.value === chartType)?.label;
 
     const chartData = useMemo(() => {
         if (region) return buildChartData(region);
@@ -52,27 +52,7 @@ export default function Chart({ region, data: externalData, loading, title = "M�
                 <span className={styles.title}>{title}</span>
 
                 <div className={styles.dropdownWrapper}>
-                    <div className={styles.dropdownButton} onClick={() => setIsOpen(!isOpen)}>
-                        {selectedLabel}
-                        <span className={isOpen ? styles.arrowUp : styles.arrowDown}>▼</span>
-                    </div>
 
-                    {isOpen && (
-                        <div className={styles.dropdownList}>
-                            {chartOptions.map((opt) => (
-                                <div
-                                    key={opt.value}
-                                    className={styles.item}
-                                    onClick={() => {
-                                        setChartType(opt.value as ChartType);
-                                        setIsOpen(false);
-                                    }}
-                                >
-                                    {opt.label}
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -114,21 +94,6 @@ export default function Chart({ region, data: externalData, loading, title = "M�
                     )}
                 </ResponsiveContainer>
                 
-                {chartType === "pie" && (
-                    <div className={styles.legend}>
-                        {chartData.map((entry, index) => (
-                            <div key={`legend-${index}`} className={styles.legendItem}>
-                                <div 
-                                    className={styles.colorBox} 
-                                    style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} 
-                                />
-                                <span style={{ fontSize: '0.75rem' }}>
-                                    {entry.name}: <strong>{entry.value}</strong>
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
         </div>
     );
