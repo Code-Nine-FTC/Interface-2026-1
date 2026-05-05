@@ -22,15 +22,8 @@ export default function Sidebar() {
 
     const currentChatId = new URLSearchParams(location.search).get("chat_id");
 
-    const refreshChats = () => {
-        buscarChats().then(setChats).catch(() => setChats([]));
-    };
-
     useEffect(() => {
-        refreshChats();
-
-        window.addEventListener('chatUpdated', refreshChats);
-        return () => window.removeEventListener('chatUpdated', refreshChats);
+        buscarChats().then(setChats).catch(() => setChats([]));
     }, []);
 
     const handleExcluirChat = async (e: React.MouseEvent, chatId: string) => {

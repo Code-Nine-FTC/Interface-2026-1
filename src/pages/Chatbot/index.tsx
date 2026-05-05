@@ -6,7 +6,7 @@ import ChatMessage, { Mensagem } from "../../components/ui/Chat/ChatMessage";
 import styles from "./Chatbot.module.css";
 import logoAtlas from "../../assets/logo.svg";
 import { enviarMensagemChat, feedbackChat, ChatMensagemResponse, Mapa } from "../../services/chatService";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { buscarHistoricoChat } from "../../services/chatHistoricoService";
 import { useTitle } from "../../context/TitleContext";
 
@@ -75,10 +75,8 @@ export default function Chatbot() {
     const [feedbackEnviado, setFeedbackEnviado] = useState<Record<string, 1 | -1>>({});
     const [feedbackDoHistorico, setFeedbackDoHistorico] = useState<Set<string>>(new Set());
     const [createdAt, setCreatedAt] = useState<string | null>(null);
-    const [mapRenderKey, setMapRenderKey] = useState<number>(Date.now());
     const chatRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
-    const navigate = useNavigate();
     const { setTitle } = useTitle();
     const possuiGeoJson = Boolean(dadosMapa?.features?.length);
     const geoJsonParaRenderizar = possuiGeoJson ? dadosMapa : null;
@@ -169,11 +167,9 @@ export default function Chatbot() {
                         if (ultimaComMapa?.mapa) {
                             setMostrarMapa(true);
                             setDadosMapa(ultimaComMapa.mapa);
-                            setMapRenderKey(Date.now());
                         } else if (data.mapa && data.mapa.features?.length) {
                             setMostrarMapa(true);
                             setDadosMapa(data.mapa);
-                            setMapRenderKey(Date.now());
                         } else {
                             setMostrarMapa(false);
                             setDadosMapa(null);
@@ -217,8 +213,6 @@ export default function Chatbot() {
     const handleEnviarMensagem = async () => {
         if (!input.trim()) return;
 
-        const isNovoChat = !chatId;
-
         if (!chatIniciado) {
             setExitandoWelcome(true);
             setTimeout(() => {
@@ -238,12 +232,6 @@ export default function Chatbot() {
 
         try {
             const resposta: ChatMensagemResponse = await enviarMensagemChat(input, chatId);
-            
-            if (isNovoChat && resposta.chat_id) {
-                navigate(`/chatbot?chat_id=${resposta.chat_id}`, { replace: true });
-                window.dispatchEvent(new Event('chatUpdated'));
-            }
-
             setChatId(resposta.chat_id);
             
             const mensagemBot: Mensagem = {
@@ -261,7 +249,6 @@ export default function Chatbot() {
             if (resposta.mapa) {
                 setMostrarMapa(true);
                 setDadosMapa(resposta.mapa);
-                setMapRenderKey(Date.now());
             } else {
                 setMostrarMapa(false);
                 setDadosMapa(null);
@@ -363,7 +350,6 @@ export default function Chatbot() {
                             queimadasLocalizacoes={possuiGeoJson ? [] : queimadasLocalizacoes}
                             quilombosLocalizacoes={[]}
                             geoJsonData={geoJsonParaRenderizar}
-                            renderKey={mapRenderKey}
                         />
                     </div>
                 )}
