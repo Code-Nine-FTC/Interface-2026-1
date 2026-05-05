@@ -470,3 +470,81 @@ export async function fetchDashboardRegions(): Promise<RegionData[]> {
         .map((item, index) => normalizeRegion(item, index))
         .filter((item): item is RegionData => item !== null);
 }
+
+// ============ State Dashboard Interfaces ============
+export interface RankingItem {
+    municipio: string;
+    uf: string;
+    valor: number;
+    unidade: string;
+    percentual_do_estado: number;
+}
+
+export interface EstadoData {
+    id: number;
+    nome: string;
+    sigla: string;
+    total_municipios: number;
+    area_protegida_total_ha: number;
+    focos_queimada_periodo: number;
+    total_alertas_desmatamento: number;
+    total_imoveis_rurais: number;
+}
+
+export interface StateDashboardRankings {
+    queimadas: RankingItem[];
+    desmatamento: RankingItem[];
+    terras_indigenas: RankingItem[];
+    quilombolas: RankingItem[];
+    unidades_conservacao: RankingItem[];
+    imoveis_rurais: RankingItem[];
+}
+
+export interface StateDashboardResponse {
+    data: {
+        estado: EstadoData;
+        rankings: StateDashboardRankings;
+    };
+}
+
+export async function fetchStateDashboard(state: string = "sp"): Promise<StateDashboardResponse | null> {
+    try {
+        const url = `http://127.0.0.1:5000/dashboard/${state}`;
+        const response = await fetch(url, {
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            console.error(`Erro ao acessar ${url}: ${response.status}`);
+            return null;
+        }
+
+        return (await response.json()) as StateDashboardResponse;
+    } catch (error) {
+        console.error("Erro ao buscar dados do estado:", error);
+        return null;
+    }
+}
+
+export function mapEstadoToRegionData(estado: EstadoData): RegionData {
+    const fireCount = estado.focos_queimada_periodo;
+    const score = getScoreFromFireCount(fireCount);
+
+    return {
+        id: estado.id,
+        name: estado.nome,
+        areaKm2: estado.area_protegida_total_ha / 100,
+        burnedOccurrences: fireCount,
+        indicators: {
+            queimadas: fireCount > 0,
+            terrasIndigenas: true,
+            unidadesConservacao: true,
+            quilombolas: true,
+            assentamentos: false,
+        },
+        score,
+        risk: getRiskFromFireCount(fireCount),
+    };
+}
