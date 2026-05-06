@@ -97,6 +97,29 @@
   line-height: 1.5;
 }
 
+.qgisLink {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 14px;
+  background: var(--orange-main);
+  color: white;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.qgisLink:hover {
+  background: #e8860b;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.25);
+}
+
+.qgisLink:active {
+  transform: scale(0.98);
+}
+
 .markdownContent li::marker {
   color: var(--orange-main);
 }

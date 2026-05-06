@@ -8,18 +8,35 @@ export interface ChatMensagemRequest {
 export interface FonteCitada {
   nome: string;
   orgao: string;
-  url: string;
+  url: string | null;
 }
 
+export type TipoFeatureMapa =
+  | "imovel_rural_queimada"
+  | "queimada_evento_relacionada"
+  | "imovel_rural_desmatamento"
+  | "desmatamento_alerta_relacionado"
+  | "imovel_rural_quilombo"
+  | "territorio_quilombola_relacionado";
+
 export interface MapaFeatureProperties {
-  tipo?: string;
+  tipo?: TipoFeatureMapa | string;
   data_ocorrencia?: string;
   fonte_sensor?: string;
+  sensor?: string;
   intensidade?: number;
+  risco_fogo?: number;
   municipio?: string | null;
   nome?: string | null;
+  nome_imovel?: string | null;
   fase?: string | null;
   area_ha?: number;
+  codigo_car?: string;
+  num_queimadas?: number;
+  dist_media_m?: number;
+  dist_min_m?: number;
+  nivel_risco_ambiental?: "baixo" | "medio" | "alto" | string;
+  tipo_alerta?: string;
 }
 
 export interface MapaFeature {
@@ -43,6 +60,8 @@ export interface ChatMensagemResponse {
   texto_resposta: string;
   fontes_citadas: FonteCitada[];
   mapa?: Mapa;
+  bbox?: number[];
+  status?: string;
 }
 
 export async function enviarMensagemChat(

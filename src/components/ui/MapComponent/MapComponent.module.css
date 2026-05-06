@@ -35,3 +35,74 @@
   border-radius: 8px;
   overflow: hidden;
 }
+
+.mapContainer :global(.leaflet-popup-content-wrapper) {
+  background: var(--background-primary);
+  color: var(--text-primary);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  padding: 2px 4px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.mapContainer :global(.leaflet-popup-content) {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 12px 16px;
+  color: var(--text-primary);
+  min-width: 180px;
+}
+
+.mapContainer :global(.leaflet-popup-content strong) {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--orange-main);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--shared-hr);
+}
+
+.mapContainer :global(.leaflet-popup-content br + br) {
+  display: none;
+}
+
+.mapContainer :global(.leaflet-popup-tip) {
+  background: var(--background-primary);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.mapContainer :global(.leaflet-popup-close-button) {
+  color: var(--text-secondary) !important;
+  font-size: 18px !important;
+  padding: 6px 8px 0 0 !important;
+  transition: color 0.2s ease;
+}
+
+.mapContainer :global(.leaflet-popup-close-button:hover) {
+  color: var(--orange-main) !important;
+  background: transparent !important;
+}
+
+.mapContainer :global(.leaflet-tooltip) {
+  background: var(--background-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--shared-hr);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 10px;
+}
+
+.mapContainer :global(.leaflet-tooltip-top::before),
+.mapContainer :global(.leaflet-tooltip-bottom::before),
+.mapContainer :global(.leaflet-tooltip-left::before),
+.mapContainer :global(.leaflet-tooltip-right::before) {
+  border-top-color: var(--background-primary);
+  border-bottom-color: var(--background-primary);
+  border-left-color: var(--background-primary);
+  border-right-color: var(--background-primary);
+}
