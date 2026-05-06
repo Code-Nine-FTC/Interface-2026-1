@@ -3,6 +3,7 @@ import type { RegionData } from "../RegionCard/types";
 export type ChartDataItem = {
     name: string;
     value: number;
+    unit?: string;
 };
 
 export function buildChartData(region: RegionData): ChartDataItem[] {

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { buscarChats, excluirChat, ChatListItem } from "../../../services/chatListService";
 import { useTitle } from "../../../context/TitleContext";
 
+
 export default function Sidebar() {
     const { theme } = useTheme();
     const { isLoading } = useLoading();
@@ -22,8 +23,27 @@ export default function Sidebar() {
 
     const currentChatId = new URLSearchParams(location.search).get("chat_id");
 
+    const refreshChats = () => {
+        buscarChats()
+            .then((data: ChatListItem[]) => {
+                const ordenados = [...data].sort((a, b) => {
+                    // Resolve o erro ts(2362) usando .getTime()
+                    // Resolve o erro ts(2339) garantindo que o campo existe
+                    const dataA = new Date(a.created_at).getTime();
+                    const dataB = new Date(b.created_at).getTime();
+                    
+                    return dataB - dataA; // Ordem decrescente
+                });
+                setChats(ordenados);
+            })
+            .catch(() => setChats([]));
+    };
+
     useEffect(() => {
-        buscarChats().then(setChats).catch(() => setChats([]));
+        refreshChats();
+
+        window.addEventListener('chatUpdated', refreshChats);
+        return () => window.removeEventListener('chatUpdated', refreshChats);
     }, []);
 
     const handleExcluirChat = async (e: React.MouseEvent, chatId: string) => {

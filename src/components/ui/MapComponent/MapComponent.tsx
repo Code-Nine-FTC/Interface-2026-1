@@ -53,7 +53,18 @@ function FitGeoJsonBounds({ data }: { data: Mapa }) {
   return null;
 }
 
+const STYLE_BY_TIPO: Record<string, L.PathOptions> = {
+  imovel_rural_queimada: { color: '#2d6a4f', weight: 1.5, fillColor: '#52b788', fillOpacity: 0.25 },
+  imovel_rural_desmatamento: { color: '#2d6a4f', weight: 1.5, fillColor: '#52b788', fillOpacity: 0.25 },
+  imovel_rural_quilombo: { color: '#2d6a4f', weight: 1.5, fillColor: '#52b788', fillOpacity: 0.25 },
+  desmatamento_alerta_relacionado: { color: '#bc4749', weight: 1.5, fillColor: '#e76f51', fillOpacity: 0.45 },
+  territorio_quilombola_relacionado: { color: '#1d7874', weight: 1.5, fillColor: '#71a6a4', fillOpacity: 0.35 },
+};
+
 function getGeoJsonStyle(feature: any) {
+  const tipo = feature?.properties?.tipo as string | undefined;
+  if (tipo && STYLE_BY_TIPO[tipo]) return STYLE_BY_TIPO[tipo];
+
   const geometryType = feature?.geometry?.type;
 
   if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') {
@@ -82,12 +93,23 @@ function getGeoJsonStyle(feature: any) {
 }
 
 function pointToLayer(feature: any, latlng: L.LatLng) {
+  const tipo = feature?.properties?.tipo as string | undefined;
   const rawIntensidade = feature?.properties?.intensidade;
   const intensidade = typeof rawIntensidade === 'number' && Number.isFinite(rawIntensidade) ? rawIntensidade : null;
-  const radius = intensidade ? Math.max(5, Math.min(14, 5 + intensidade / 40)) : 6;
+  const radius = intensidade ? Math.max(5, Math.min(14, 5 + intensidade / 40)) : 5;
+
+  if (tipo === 'queimada_evento_relacionada') {
+    return L.circleMarker(latlng, {
+      radius,
+      color: '#d00000',
+      weight: 1,
+      fillColor: '#e63946',
+      fillOpacity: 0.85,
+    });
+  }
 
   return L.circleMarker(latlng, {
-    radius,
+    radius: radius || 6,
     color: '#c0392b',
     weight: 1,
     fillColor: '#e74c3c',
@@ -95,14 +117,85 @@ function pointToLayer(feature: any, latlng: L.LatLng) {
   });
 }
 
+function formatarData(valor: unknown): string | null {
+  if (typeof valor !== 'string' || !valor) return null;
+  const d = new Date(valor);
+  return Number.isNaN(d.getTime()) ? valor : d.toLocaleString('pt-BR');
+}
+
+function escapeHtml(valor: unknown): string {
+  return String(valor).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[c] as string));
+}
+
+function linhaPopup(label: string, valor: unknown): string {
+  return `<div class="atlas-popup-row"><span class="atlas-popup-label">${escapeHtml(label)}</span><span class="atlas-popup-value">${escapeHtml(valor)}</span></div>`;
+}
+
 function bindFeaturePopup(feature: any, layer: L.Layer) {
   const properties = (feature?.properties ?? {}) as Record<string, unknown>;
-  const nome = String(properties.nome ?? properties.municipio ?? 'Sem nome');
   const tipo = String(properties.tipo ?? 'Geometria');
-  const intensidade = typeof properties.intensidade === 'number' ? `<br/>Intensidade: ${properties.intensidade}` : '';
-  const fase = properties.fase ? `<br/>Fase: ${String(properties.fase)}` : '';
+  let titulo = 'Geometria';
+  const linhas: string[] = [];
 
-  layer.bindPopup(`<strong>${nome}</strong><br/>Tipo: ${tipo}${intensidade}${fase}`);
+  switch (tipo) {
+    case 'imovel_rural_queimada': {
+      titulo = String(properties.nome_imovel ?? 'Imóvel rural');
+      if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
+      if (properties.codigo_car) linhas.push(linhaPopup('CAR', properties.codigo_car));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
+      if (typeof properties.num_queimadas === 'number') linhas.push(linhaPopup('Focos relacionados', properties.num_queimadas));
+      if (typeof properties.dist_min_m === 'number') linhas.push(linhaPopup('Distância mínima', `${Math.round(properties.dist_min_m)} m`));
+      if (properties.nivel_risco_ambiental) linhas.push(linhaPopup('Risco', properties.nivel_risco_ambiental));
+      break;
+    }
+    case 'queimada_evento_relacionada': {
+      titulo = 'Foco de queimada';
+      const data = formatarData(properties.data_ocorrencia);
+      if (data) linhas.push(linhaPopup('Data', data));
+      if (properties.sensor) linhas.push(linhaPopup('Sensor', properties.sensor));
+      else if (properties.fonte_sensor) linhas.push(linhaPopup('Sensor', properties.fonte_sensor));
+      if (typeof properties.intensidade === 'number') linhas.push(linhaPopup('Intensidade', properties.intensidade));
+      if (typeof properties.risco_fogo === 'number') linhas.push(linhaPopup('Risco fogo', properties.risco_fogo));
+      break;
+    }
+    case 'imovel_rural_desmatamento':
+    case 'imovel_rural_quilombo': {
+      titulo = String(properties.nome_imovel ?? 'Imóvel rural');
+      if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
+      if (properties.codigo_car) linhas.push(linhaPopup('CAR', properties.codigo_car));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
+      break;
+    }
+    case 'desmatamento_alerta_relacionado': {
+      titulo = 'Alerta de desmatamento';
+      if (properties.tipo_alerta) linhas.push(linhaPopup('Tipo', properties.tipo_alerta));
+      const data = formatarData(properties.data_ocorrencia);
+      if (data) linhas.push(linhaPopup('Data', data));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
+      break;
+    }
+    case 'territorio_quilombola_relacionado': {
+      titulo = String(properties.nome ?? 'Território quilombola');
+      if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
+      break;
+    }
+    default: {
+      titulo = String(properties.nome ?? properties.municipio ?? 'Sem nome');
+      linhas.push(linhaPopup('Tipo', tipo));
+      if (typeof properties.intensidade === 'number') linhas.push(linhaPopup('Intensidade', properties.intensidade));
+      if (properties.fase) linhas.push(linhaPopup('Fase', properties.fase));
+    }
+  }
+
+  const html = `<div class="atlas-popup"><div class="atlas-popup-title">${escapeHtml(titulo)}</div>${linhas.join('')}</div>`;
+  layer.bindPopup(html);
 }
 
 const poluicaoIcon = L.divIcon({
