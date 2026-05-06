@@ -140,7 +140,6 @@ export default function Dashboard() {
                     <div className={styles.chartSection}>
                         <div className={styles.sectionHeader}>
                             <h3>Top 10 — {selectedLabel}</h3>
-                            <span className={styles.count}>{rankingData.length} municípios</span>
                         </div>
                         <div className={styles.chart}>
                             <Chart data={chartData} title="" />
@@ -158,7 +157,7 @@ export default function Dashboard() {
                                     <tr>
                                         <th>#</th>
                                         <th>Município</th>
-                                        <th>Valor</th>
+                                        <th>Valor (ha)</th>
                                         <th>%</th>
                                     </tr>
                                 </thead>
