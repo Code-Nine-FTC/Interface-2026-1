@@ -287,12 +287,11 @@ export default function Chatbot() {
                     <div className={`${styles.welcomeArea} ${exitandoWelcome ? styles.fadeOut : ""}`}>
                         <div className={styles.welcomeContent}>
                         <h1 className={styles.welcomeTitle}>
-                            <div className={styles.line1}>Bem-vindo ao sistema Atlas.</div>
-                            <div className={styles.line2}>Consulte nosso chat para obter informações geoespaciais abaixo.</div>
+                            <div className={styles.line1}>Bem-vindo ao Atlas.</div>
+                            <div className={styles.line2}>Consulte nosso chat para obter informações geoespaciais.</div>
                         </h1>
                     </div>
-                    </div>
-                    )}
+                    </div>)}
                     
                     <div 
                         className={`${styles.messagesArea} ${(!chatIniciado && !exitandoWelcome) ? styles.hidden : ""}`} 
