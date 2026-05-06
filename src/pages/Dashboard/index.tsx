@@ -1,28 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
-import { useTitle } from "../../context/TitleContext";
+import { useEffect, useMemo, useState } from "react"
+import { useTitle } from "../../context/TitleContext"
 
-// SearchBar and RegionCard are unused in this page (kept out to avoid TS/ESLint warnings)
-import Chart from "../../components/ui/Chart/Chart";
-import { RankingBarChart } from "../../ui/Chart/RankingBarChart";
+import Chart from "../../components/ui/Chart/Chart"
 
-import styles from "./Dashboard.module.css";
+import styles from "./Dashboard.module.css"
 import {
     fetchStateDashboard,
-    mapEstadoToRegionData,
-    type RankingItem,
     type StateDashboardResponse,
-} from "../../services/dashboardService";
+} from "../../services/dashboardService"
+
+const rankingLabels: Record<keyof StateDashboardResponse["data"]["rankings"], string> = {
+    queimadas: "Queimadas",
+    desmatamento: "Desmatamento",
+    terras_indigenas: "Terras Indígenas",
+    quilombolas: "Quilombolas",
+    unidades_conservacao: "Unidades de Conservação",
+    imoveis_rurais: "Imóveis Rurais",
+};
 
 export default function Dashboard() {
     const { setTitle } = useTitle();
-
     const [stateDashboard, setStateDashboard] = useState<StateDashboardResponse | null>(null);
-    const [selectedRankingType, setSelectedRankingType] = useState<"queimadas" | "desmatamento" | "terras_indigenas" | "quilombolas" | "unidades_conservacao" | "imoveis_rurais">("queimadas");
+    const [selectedRankingType, setSelectedRankingType] = useState<keyof StateDashboardResponse["data"]["rankings"]>("queimadas");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setTitle("Dashboard do Sistema");
-    }, []);
+        setTitle("Dashboard de São Paulo");
+    }, [setTitle]);
 
     useEffect(() => {
         let cancelled = false;
@@ -31,14 +35,8 @@ export default function Dashboard() {
             try {
                 setLoading(true);
                 const data = await fetchStateDashboard("sp");
-
                 if (cancelled) return;
-
-                if (data) {
-                    setStateDashboard(data);
-                } else {
-                    setStateDashboard(null);
-                }
+                setStateDashboard(data);
             } catch {
                 if (!cancelled) {
                     setStateDashboard(null);
@@ -57,119 +55,128 @@ export default function Dashboard() {
         };
     }, []);
 
-
-    const selectedRegion = useMemo(() => {
-        if (!stateDashboard) return null;
-        return mapEstadoToRegionData(stateDashboard.data.estado);
-    }, [stateDashboard]);
-
-    const chartData = useMemo(() => {
-        if (!stateDashboard) return [];
-
-        const ranking = stateDashboard.data.rankings[selectedRankingType];
-        if (!ranking || !Array.isArray(ranking)) return [];
-        
-        return ranking.slice(0, 10).map((item) => ({
-            name: item.municipio,
-            value: item.valor,
-        }));
-    }, [stateDashboard, selectedRankingType]);
-
     const rankingData = useMemo(() => {
         if (!stateDashboard) return [];
         const ranking = stateDashboard.data.rankings[selectedRankingType];
-        return (Array.isArray(ranking) ? ranking : []) || [];
+        return Array.isArray(ranking) ? ranking : [];
     }, [stateDashboard, selectedRankingType]);
 
-    if (loading || !selectedRegion) {
+    const chartData = useMemo(() => {
+        return rankingData.slice(0, 10).map((item) => ({
+            name: item.municipio.substring(0, 12),
+            value: Number(item.valor.toFixed(1)),
+        }));
+    }, [rankingData]);
+
+    const formattedTotal = (value: number, suffix = "") =>
+        `${value.toLocaleString("pt-BR")} ${suffix}`.trim();
+
+    if (loading) {
         return (
-            <div className={styles.container}>
-                <p>Carregando dados do dashboard...</p>
+            <div className={styles.loadingContainer}>
+                <span>Carregando dados...</span>
             </div>
         );
     }
 
+    if (!stateDashboard) {
+        return (
+            <div className={styles.loadingContainer}>
+                <span>Erro ao carregar dados.</span>
+            </div>
+        );
+    }
+
+    const stateInfo = stateDashboard.data.estado;
+    const selectedLabel = rankingLabels[selectedRankingType];
+    const topMunicipio = rankingData[0];
+
     return (
         <div className={styles.container}>
+            <header className={styles.header}>
+                <div className={styles.headerContent}>
+                    <h1 className={styles.title}>São Paulo — Monitoramento Ambiental</h1>
+                    <p className={styles.subtitle}>Indicadores ambientais e rankings municipais</p>
+                </div>
+                <div className={styles.statsRow}>
+                    <div className={styles.statItem}>
+                        <span className={styles.statNum}>{stateInfo.total_municipios}</span>
+                        <span className={styles.statName}>Municípios</span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statNum}>{formattedTotal(Number(stateInfo.area_protegida_total_ha.toFixed(0)))}</span>
+                        <span className={styles.statName}>ha protegidas</span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statNum}>{stateInfo.focos_queimada_periodo}</span>
+                        <span className={styles.statName}>Focos</span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statNum}>{formattedTotal(stateInfo.total_alertas_desmatamento)}</span>
+                        <span className={styles.statName}>Alertas</span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statNum}>{formattedTotal(stateInfo.total_imoveis_rurais)}</span>
+                        <span className={styles.statName}>Imóveis rurais</span>
+                    </div>
+                </div>
+            </header>
 
-            <div className={styles.topSection}>
-                <div className={styles.filtersWrapper}>
-                    {/* {selectedRegion && <RegionCard data={selectedRegion} />}
-
-                    <h2 className={styles.metricsTitle}>
-                        Métricas da região:
-                    </h2> */}
-
-                    <div className={styles.rankingSelector}>
-                        <label htmlFor="ranking-select">Tipo de ranking:</label>
-                        <select 
-                            id="ranking-select"
-                            value={selectedRankingType}
-                            onChange={(e) => setSelectedRankingType(e.target.value as "queimadas" | "desmatamento" | "terras_indigenas" | "quilombolas" | "unidades_conservacao" | "imoveis_rurais")}
+            <section className={styles.mainPanel}>
+                <div className={styles.tabsBar}>
+                    {Object.entries(rankingLabels).map(([key, label]) => (
+                        <button
+                            key={key}
+                            className={`${styles.tab} ${selectedRankingType === key ? styles.tabActive : ""}`}
+                            onClick={() => setSelectedRankingType(key as keyof StateDashboardResponse["data"]["rankings"])}
+                            type="button"
                         >
-                            <option value="queimadas">Queimadas (focos)</option>
-                            <option value="desmatamento">Desmatamento (ha)</option>
-                            <option value="terras_indigenas">Terras Indígenas (ha)</option>
-                            <option value="quilombolas">Terras Quilombolas (ha)</option>
-                            <option value="unidades_conservacao">Unidades de Conservação (ha)</option>
-                            <option value="imoveis_rurais">Imóveis Rurais (ha)</option>
-                        </select>
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className={styles.contentGrid}>
+                    <div className={styles.chartSection}>
+                        <div className={styles.sectionHeader}>
+                            <h3>Top 10 — {selectedLabel}</h3>
+                            <span className={styles.count}>{rankingData.length} municípios</span>
+                        </div>
+                        <div className={styles.chart}>
+                            <Chart data={chartData} title="" />
+                        </div>
                     </div>
-                    <h3 style={{paddingBottom:"20px"}}>Ranking completo - {selectedRankingType.replace(/_/g, " ")}</h3>
 
-
-                    <div className={styles.rankingTable}>
-                        <table>
-                            <thead>
-                                <tr style={{position:"relative", backgroundColor:"#ffff"}}>
-                                    <th>Posição</th>
-                                    <th>Município</th>
-                                    <th>Valor</th>
-                                    <th>% do estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rankingData.map((item, index) => (
-                                    <tr key={`${item.municipio}-${index}`}>
-                                        <td>{index + 1}</td>
-                                        <td>{item.municipio}</td>
-                                        <td>{item.valor.toFixed(2)} {item.unidade}</td>
-                                        <td>{item.percentual_do_estado.toFixed(2)}%</td>
+                    <div className={styles.tableSection}>
+                        <div className={styles.sectionHeader}>
+                            <h3>Ranking Completo</h3>
+                            <span className={styles.topMunicipio}>{topMunicipio?.municipio}</span>
+                        </div>
+                        <div className={styles.tableWrapper}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Município</th>
+                                        <th>Valor</th>
+                                        <th>%</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {rankingData.map((item, idx) => (
+                                        <tr key={`${item.municipio}-${idx}`}>
+                                            <td className={styles.position}>{idx + 1}</td>
+                                            <td>{item.municipio}</td>
+                                            <td className={styles.value}>{item.valor.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}</td>
+                                            <td className={styles.percent}>{item.percentual_do_estado.toFixed(1)}%</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div className={styles.bottomSection}>
-                <h2>Gráficos por ranking</h2>
-                <div className={styles.chartsGrid}>
-                    {stateDashboard && (
-                        (() => {
-                            const r = stateDashboard.data.rankings;
-                            const list = [
-                                { key: 'queimadas', title: 'Queimadas', color: '#e57373' },
-                                { key: 'desmatamento', title: 'Desmatamento', color: '#81c784' },
-                                { key: 'terras_indigenas', title: 'Terras Indígenas', color: '#ffd54f' },
-                                { key: 'quilombolas', title: 'Quilombolas', color: '#ba68c8' },
-                                { key: 'unidades_conservacao', title: 'Unidades de Conservação', color: '#4fc3f7' },
-                                { key: 'imoveis_rurais', title: 'Imóveis Rurais', color: '#a1887f' },
-                            ];
-
-                            return list.map((cfg) => {
-                                const items = Array.isArray((r as any)[cfg.key]) ? (r as any)[cfg.key].slice(0, 10) : [];
-                                return (
-                                    <div key={cfg.key} className={styles.chartCard}>
-                                        <RankingBarChart title={cfg.title} data={items} color={cfg.color} />
-                                    </div>
-                                );
-                            });
-                        })()
-                    )}
-                </div>
-            </div>
+            </section>
         </div>
     );
 }
