@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTitle } from "../../context/TitleContext";
 
-import SearchBar, { SearchItem } from "../../components/ui/SearchBar/SearchBar";
-import RegionCard from "../../components/ui/RegionCard/RegionCard";
+// SearchBar and RegionCard are unused in this page (kept out to avoid TS/ESLint warnings)
 import Chart from "../../components/ui/Chart/Chart";
+import { RankingBarChart } from "../../ui/Chart/RankingBarChart";
 
 import styles from "./Dashboard.module.css";
 import {
@@ -115,17 +115,13 @@ export default function Dashboard() {
                             <option value="imoveis_rurais">Imóveis Rurais (ha)</option>
                         </select>
                     </div>
+                    <h3 style={{paddingBottom:"20px"}}>Ranking completo - {selectedRankingType.replace(/_/g, " ")}</h3>
 
-                    <Chart
-                        data={chartData}
-                        title={`Top 10 - ${selectedRankingType.replace("_", " ")}`}
-                    />
 
                     <div className={styles.rankingTable}>
-                        <h3>Ranking completo - {selectedRankingType.replace(/_/g, " ")}</h3>
                         <table>
                             <thead>
-                                <tr>
+                                <tr style={{position:"relative", backgroundColor:"#ffff"}}>
                                     <th>Posição</th>
                                     <th>Município</th>
                                     <th>Valor</th>
@@ -144,6 +140,34 @@ export default function Dashboard() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <div className={styles.bottomSection}>
+                <h2>Gráficos por ranking</h2>
+                <div className={styles.chartsGrid}>
+                    {stateDashboard && (
+                        (() => {
+                            const r = stateDashboard.data.rankings;
+                            const list = [
+                                { key: 'queimadas', title: 'Queimadas', color: '#e57373' },
+                                { key: 'desmatamento', title: 'Desmatamento', color: '#81c784' },
+                                { key: 'terras_indigenas', title: 'Terras Indígenas', color: '#ffd54f' },
+                                { key: 'quilombolas', title: 'Quilombolas', color: '#ba68c8' },
+                                { key: 'unidades_conservacao', title: 'Unidades de Conservação', color: '#4fc3f7' },
+                                { key: 'imoveis_rurais', title: 'Imóveis Rurais', color: '#a1887f' },
+                            ];
+
+                            return list.map((cfg) => {
+                                const items = Array.isArray((r as any)[cfg.key]) ? (r as any)[cfg.key].slice(0, 10) : [];
+                                return (
+                                    <div key={cfg.key} className={styles.chartCard}>
+                                        <RankingBarChart title={cfg.title} data={items} color={cfg.color} />
+                                    </div>
+                                );
+                            });
+                        })()
+                    )}
                 </div>
             </div>
         </div>
