@@ -1,3 +1,4 @@
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import styles from "./ChatMessage.module.css";
 import { FonteCitada, Mapa } from "../../../services/chatService";
@@ -24,6 +25,15 @@ export default function ChatMessage({
     feedbackEnviado,
     onFeedback
 }: ChatMessageProps) {
+    const [copiadoQgis, setCopiadoQgis] = React.useState(false);
+
+    const copiarQgisUrl = () => {
+        const url = "http://localhost:5000/chat/resposta/" + msg.id + "/geojson";
+        navigator.clipboard.writeText(url).then(() => {
+            setCopiadoQgis(true);
+            setTimeout(() => setCopiadoQgis(false), 2000);
+        });
+    };
     if (msg.tipo === "bot") {
         return (
             <div className={styles.botResponseCard}>
@@ -34,6 +44,13 @@ export default function ChatMessage({
                                 ? msg.texto.replace(/\*{0,2}Fontes?\s*consultadas:?\*{0,2}[\s\S]*/i, '').trim()
                                 : msg.texto}
                         </ReactMarkdown>
+                        <button
+                            onClick={copiarQgisUrl}
+                            className={styles.qgisLink}
+                            title="Copiar URL para utilizar no QGIS"
+                        >
+                            {copiadoQgis ? "Copiado!" : "Copiar Link QGIS"}
+                        </button>
                     </div>
                     {msg.fontes && msg.fontes.length > 0 && (
                         <div className={styles.fontesCitadas}>
