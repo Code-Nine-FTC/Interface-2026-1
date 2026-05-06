@@ -40,16 +40,23 @@ export default function ChatMessage({
                             <span className={styles.fontesLabel}>📚 Fontes consultadas</span>
                             <div className={styles.fontesList}>
                                 {msg.fontes.map((fonte, idx) => (
-                                    <a
-                                        key={idx}
-                                        href={fonte.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={styles.fonteBadge}
-                                    >
-                                        <span className={styles.fonteNome}>{fonte.nome}</span>
-                                        <span className={styles.fonteOrgao}>{fonte.orgao}</span>
-                                    </a>
+                                    fonte.url ? (
+                                        <a
+                                            key={idx}
+                                            href={fonte.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.fonteBadge}
+                                        >
+                                            <span className={styles.fonteNome}>{fonte.nome}</span>
+                                            <span className={styles.fonteOrgao}>{fonte.orgao}</span>
+                                        </a>
+                                    ) : (
+                                        <span key={idx} className={styles.fonteBadge}>
+                                            <span className={styles.fonteNome}>{fonte.nome}</span>
+                                            <span className={styles.fonteOrgao}>{fonte.orgao}</span>
+                                        </span>
+                                    )
                                 ))}
                             </div>
                         </div>
