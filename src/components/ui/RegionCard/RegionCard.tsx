@@ -71,37 +71,6 @@ const indicatorList = [
             </div>
 
             <div className={styles.divider} />
-
-            <div className={styles.right}>
-                <h3 className={styles.sectionTitle}>Métricas gerais:</h3>
-
-                <div className={styles.metric}>
-                    <span>Score ambiental:</span>
-                    <div className={styles.bar}>
-                        <div
-                            className={styles.fill}
-                            style={{ width: `${score}%` }}
-                        />
-                    </div>
-                    <span className={styles.score}>{score}/100</span>
-                </div>
-
-                <div className={styles.metric}>
-                    <span>Risco de queimadas:</span>
-                    <div className={styles.bar}>
-                        <div
-                            className={styles.fill}
-                            style={{ width: riskWidth }}
-                        />
-                    </div>
-
-                    <div className={styles.riskLabels}>
-                        <span>Baixo</span>
-                        <span>Médio</span>
-                        <span>Alto</span>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }

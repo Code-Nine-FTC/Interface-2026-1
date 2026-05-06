@@ -1,9 +1,10 @@
 
 export interface ChatListItem {
-  id: string;
-  title: string;
-  ativo?: boolean;
-}
+        id: string;
+        title: string;
+        created_at: string; 
+        ativo: boolean;
+    }
 
 export async function buscarChats(): Promise<ChatListItem[]> {
   const response = await fetch("http://127.0.0.1:5000/chat/");
