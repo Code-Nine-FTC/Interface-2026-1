@@ -51,6 +51,13 @@
     line-height: 1;
 }
 
+.statSecondary {
+    font-size: 0.78rem;
+    color: #6b7584;
+    font-weight: 600;
+    line-height: 1;
+}
+
 .statName {
     font-size: 0.8rem;
     color: #8a92a8;

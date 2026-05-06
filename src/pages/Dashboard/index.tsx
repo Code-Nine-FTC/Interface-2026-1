@@ -6,6 +6,7 @@ import Chart from "../../components/ui/Chart/Chart"
 import styles from "./Dashboard.module.css"
 import {
     fetchStateDashboard,
+    type RankingItem,
     type StateDashboardResponse,
 } from "../../services/dashboardService"
 
@@ -65,11 +66,27 @@ export default function Dashboard() {
         return rankingData.slice(0, 10).map((item) => ({
             name: item.municipio.substring(0, 12),
             value: Number(item.valor.toFixed(1)),
+            unit: item.unidade,
         }));
     }, [rankingData]);
 
     const formattedTotal = (value: number, suffix = "") =>
         `${value.toLocaleString("pt-BR")} ${suffix}`.trim();
+
+    const formatArea = (areaHa: number) => ({
+        ha: formattedTotal(Number(areaHa.toFixed(0))),
+        km2: formattedTotal(Number((areaHa / 100).toFixed(2))),
+    });
+
+    const formatRankingValue = (item: RankingItem) => {
+        const unit = item.unidade?.trim() ?? "";
+
+        if (/ha|hect/i.test(unit)) {
+            return `${item.valor.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} ha (${(item.valor / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} km²)`;
+        }
+
+        return `${item.valor.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}${unit ? ` ${unit}` : ""}`;
+    };
 
     if (loading) {
         return (
@@ -90,6 +107,7 @@ export default function Dashboard() {
     const stateInfo = stateDashboard.data.estado;
     const selectedLabel = rankingLabels[selectedRankingType];
     const topMunicipio = rankingData[0];
+    const protectedArea = formatArea(stateInfo.area_protegida_total_ha);
 
     return (
         <div className={styles.container}>
@@ -104,8 +122,9 @@ export default function Dashboard() {
                         <span className={styles.statName}>Municípios</span>
                     </div>
                     <div className={styles.statItem}>
-                        <span className={styles.statNum}>{formattedTotal(Number(stateInfo.area_protegida_total_ha.toFixed(0)))}</span>
-                        <span className={styles.statName}>ha protegidas</span>
+                        <span className={styles.statNum}>{protectedArea.ha} ha</span>
+                        <span className={styles.statSecondary}>{protectedArea.km2} km²</span>
+                        <span className={styles.statName}>Área protegida</span>
                     </div>
                     <div className={styles.statItem}>
                         <span className={styles.statNum}>{stateInfo.focos_queimada_periodo}</span>
@@ -157,7 +176,7 @@ export default function Dashboard() {
                                     <tr>
                                         <th>#</th>
                                         <th>Município</th>
-                                        <th>Valor (ha)</th>
+                                        <th>Valor</th>
                                         <th>%</th>
                                     </tr>
                                 </thead>
@@ -166,7 +185,7 @@ export default function Dashboard() {
                                         <tr key={`${item.municipio}-${idx}`}>
                                             <td className={styles.position}>{idx + 1}</td>
                                             <td>{item.municipio}</td>
-                                            <td className={styles.value}>{item.valor.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}</td>
+                                            <td className={styles.value}>{formatRankingValue(item)}</td>
                                             <td className={styles.percent}>{item.percentual_do_estado.toFixed(1)}%</td>
                                         </tr>
                                     ))}

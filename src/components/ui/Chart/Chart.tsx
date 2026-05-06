@@ -44,6 +44,19 @@ export default function Chart({ region, data: externalData, loading, title = "MÃ
         return [];
     }, [externalData, region]);
 
+    const chartUnit = chartData.find((item) => item.unit?.trim())?.unit?.trim() ?? "";
+    const axisLabel = chartUnit ? `Valor (${chartUnit})` : "Valor";
+
+    const formatChartValue = (value: number, unit?: string) => {
+        const normalizedUnit = unit?.trim() ?? "";
+
+        if (/^ha$|hect/i.test(normalizedUnit)) {
+            return `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} ha (${(value / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kmÂ²)`;
+        }
+
+        return `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
+    };
+
     if (loading) return <div className={styles.loading}>Carregando dados...</div>;
 
     return (
@@ -61,26 +74,38 @@ export default function Chart({ region, data: externalData, loading, title = "MÃ
                     {chartType === "bar" ? (
                         <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <XAxis tick={{ fill: "var(--text-secondary)", fontSize: 10 }} dataKey="name" interval={0} />
-                            <YAxis tick={{ fill: "var(--text-secondary)" }} />
-                            <Tooltip contentStyle={{ borderRadius: '8px' }} />
+                            <YAxis tick={{ fill: "var(--text-secondary)" }} label={{ value: axisLabel, angle: -90, position: "insideLeft" }} />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '8px' }}
+                                formatter={(value, _name, props) => {
+                                    const point = props.payload as ChartDataItem | undefined;
+                                    return [formatChartValue(Number(value), point?.unit), point?.unit?.trim() ? `Valor (${point.unit.trim()})` : "Valor"];
+                                }}
+                            />
                             <Legend verticalAlign="top" height={36}/>
-                            <Bar name="Quantidade" dataKey="value" fill="var(--orange-main)" radius={[4, 4, 0, 0]} />
+                            <Bar name={axisLabel} dataKey="value" fill="var(--orange-main)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     ) : chartType === "line" ? (
                         <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <XAxis dataKey="name" tick={{ fill: "var(--text-secondary)", fontSize: 10 }} interval={0} />
-                            <YAxis tick={{ fill: "var(--text-secondary)" }} />
-                            <Tooltip />
+                            <YAxis tick={{ fill: "var(--text-secondary)" }} label={{ value: axisLabel, angle: -90, position: "insideLeft" }} />
+                            <Tooltip formatter={(value, _name, props) => {
+                                const point = props.payload as ChartDataItem | undefined;
+                                return [formatChartValue(Number(value), point?.unit), point?.unit?.trim() ? `Valor (${point.unit.trim()})` : "Valor"];
+                            }} />
                             <Legend verticalAlign="top" height={36}/>
-                            <Line name="TendÃªncia" type="monotone" dataKey="value" stroke="var(--orange-main)" strokeWidth={3} dot={{ r: 6 }} />
+                            <Line name={axisLabel} type="monotone" dataKey="value" stroke="var(--orange-main)" strokeWidth={3} dot={{ r: 6 }} />
                         </LineChart>
                     ) : chartType === "area" ? (
                         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <XAxis dataKey="name" tick={{ fill: "var(--text-secondary)", fontSize: 10 }} interval={0} />
-                            <YAxis tick={{ fill: "var(--text-secondary)" }} />
-                            <Tooltip />
+                            <YAxis tick={{ fill: "var(--text-secondary)" }} label={{ value: axisLabel, angle: -90, position: "insideLeft" }} />
+                            <Tooltip formatter={(value, _name, props) => {
+                                const point = props.payload as ChartDataItem | undefined;
+                                return [formatChartValue(Number(value), point?.unit), point?.unit?.trim() ? `Valor (${point.unit.trim()})` : "Valor"];
+                            }} />
                             <Legend verticalAlign="top" height={36}/>
-                            <Area name="Densidade" type="monotone" dataKey="value" fill="var(--orange-main)" stroke="var(--orange-main)" fillOpacity={0.3} />
+                            <Area name={axisLabel} type="monotone" dataKey="value" fill="var(--orange-main)" stroke="var(--orange-main)" fillOpacity={0.3} />
                         </AreaChart>
                     ) : (
                         <PieChart>
@@ -89,7 +114,13 @@ export default function Chart({ region, data: externalData, loading, title = "MÃ
                                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip contentStyle={{ borderRadius: '8px' }} />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '8px' }}
+                                formatter={(value, _name, props) => {
+                                    const point = props.payload as ChartDataItem | undefined;
+                                    return [formatChartValue(Number(value), point?.unit), point?.unit?.trim() ? `Valor (${point.unit.trim()})` : "Valor"];
+                                }}
+                            />
                         </PieChart>
                     )}
                 </ResponsiveContainer>
