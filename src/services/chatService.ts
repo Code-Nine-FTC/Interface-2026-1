@@ -3,6 +3,7 @@
 export interface ChatMensagemRequest {
   pergunta: string;
   chat_id: string | null;
+  municipio?: string | null;
 }
 
 export interface FonteCitada {
@@ -66,14 +67,19 @@ export interface ChatMensagemResponse {
 
 export async function enviarMensagemChat(
   pergunta: string,
-  chat_id: string | null = null
+  chat_id: string | null = null,
+  municipio?: string | null
 ): Promise<ChatMensagemResponse> {
+  const body: ChatMensagemRequest = { pergunta, chat_id };
+  if (municipio) {
+    body.municipio = municipio;
+  }
   const response = await fetch("http://127.0.0.1:5000/chat/mensagem", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ pergunta, chat_id }),
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
     throw new Error("Erro ao enviar mensagem para o backend");
