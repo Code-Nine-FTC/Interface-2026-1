@@ -1,0 +1,153 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 1.25rem;
+    min-height: 100%;
+}
+
+.header {
+    padding: 1.5rem;
+    background: var(--background-primary);
+    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid var(--shared-hr);
+}
+
+.headerContent {
+    margin-bottom: 1rem;
+}
+
+.title {
+    margin: 0;
+    font-size: 1.75rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.subtitle {
+    margin: 0.4rem 0 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.mainPanel {
+    background: var(--background-primary);
+    border-radius: 0 0 12px 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.searchSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.searchLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.municipioInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--shared-hr);
+}
+
+.municipioName {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--orange-main);
+    margin: 0;
+}
+
+.municipioMeta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.municipioMeta span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.clearButton {
+    align-self: flex-start;
+    background: none;
+    border: 1px solid var(--shared-hr);
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.clearButton:hover {
+    background: var(--background-tertiary);
+    color: var(--text-primary);
+}
+
+.mapFiltersGrid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.mapSection {
+    height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.filterSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+@media (max-width: 1024px) {
+    .mapFiltersGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .mapSection {
+        min-height: 300px;
+    }
+}
+
+.filterTitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.placeholder {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.loadingContainer {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    padding: 2rem;
+}
