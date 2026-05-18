@@ -65,6 +65,7 @@ export default function Sidebar() {
     const menuItems = [
     { to: "/", label: "Chatbot", icon: <ChatbotIcon />, disabled: false },
     { to: "/dashboard", label: "Dashboard", icon: <DashboardIcon />, disabled: false },
+    { to: "/filtros", label: "Filtros", icon: <FilterIcon />, disabled: false },
 ];
 
     return (
