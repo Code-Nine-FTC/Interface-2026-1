@@ -1,5 +1,5 @@
-import { MapContainer, TileLayer, Marker, Popup, LayerGroup, GeoJSON, useMap } from 'react-leaflet';
-import { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, LayerGroup, useMap } from 'react-leaflet';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import styles from './MapComponent.module.css';
@@ -40,14 +40,33 @@ function isValidLatLng(lat: number, lng: number): boolean {
   return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
 }
 
-function FitGeoJsonBounds({ data }: { data: Mapa }) {
+function GeoJsonLayer({ data }: { data: Mapa }) {
   const map = useMap();
+  const layerRef = useRef<L.GeoJSON | null>(null);
 
   useEffect(() => {
-    const bounds = L.geoJSON(data as any).getBounds();
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+    }
+    const layer = L.geoJSON(data as any, {
+      style: getGeoJsonStyle,
+      pointToLayer,
+      onEachFeature: bindFeaturePopup,
+    });
+    layer.addTo(map);
+    layerRef.current = layer;
+
+    const bounds = layer.getBounds();
     if (bounds.isValid()) {
       map.fitBounds(bounds, { padding: [24, 24] });
     }
+
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+        layerRef.current = null;
+      }
+    };
   }, [data, map]);
 
   return null;
@@ -234,16 +253,7 @@ export default function MapComponent({
         />
 
         {hasGeoJson && geoJsonData && (
-          <>
-            <FitGeoJsonBounds data={geoJsonData} />
-            <GeoJSON
-              key={renderKey ?? 'geojson-default'}
-              data={geoJsonData as any}
-              style={getGeoJsonStyle}
-              pointToLayer={pointToLayer}
-              onEachFeature={bindFeaturePopup}
-            />
-          </>
+          <GeoJsonLayer key={renderKey ?? 'geojson-default'} data={geoJsonData} />
         )}
 
         <LayerGroup>
