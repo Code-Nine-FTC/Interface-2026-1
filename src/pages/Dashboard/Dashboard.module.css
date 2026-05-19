@@ -208,6 +208,66 @@
     text-align: right;
 }
 
+.filterChip {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.8rem;
+    background: #fff5f0;
+    color: #c85a1e;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.municipioDetail {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #fafbfd;
+    border: 1px solid #e4e7ed;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #4a5568;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.municipioDetail strong {
+    color: #1a2332;
+}
+
+.layerChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.layerChip {
+    padding: 0.3rem 0.7rem;
+    background: #f5f6f9;
+    color: #8a92a8;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.layerChipActive {
+    background: #fff5f0;
+    color: #c85a1e;
+    font-weight: 600;
+}
+
+.highlightedRow {
+    background: #fff5f0 !important;
+    outline: 2px solid #ff8a24;
+    outline-offset: -2px;
+}
+
+.highlightedRow td {
+    color: #c85a1e !important;
+    font-weight: 700 !important;
+}
+
 .loadingContainer {
     min-height: 60vh;
     display: flex;
