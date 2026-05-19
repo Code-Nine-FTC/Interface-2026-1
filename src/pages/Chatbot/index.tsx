@@ -9,6 +9,7 @@ import { enviarMensagemChat, feedbackChat, ChatMensagemResponse, Mapa } from "..
 import { useLocation, useNavigate } from "react-router-dom";
 import { buscarHistoricoChat } from "../../services/chatHistoricoService";
 import { useTitle } from "../../context/TitleContext";
+import { useFilter } from "../../context/FilterContext";
 
 interface CoordenadaMapa {
     lat: number;
@@ -80,6 +81,7 @@ export default function Chatbot() {
     const location = useLocation();
     const navigate = useNavigate();
     const { setTitle } = useTitle();
+    const { selectedMunicipioNome, clearFilters } = useFilter();
     const possuiGeoJson = Boolean(dadosMapa?.features?.length);
     const geoJsonParaRenderizar = possuiGeoJson ? dadosMapa : null;
 
@@ -227,7 +229,7 @@ export default function Chatbot() {
         setDigitando(true);
 
         try {
-            const resposta: ChatMensagemResponse = await enviarMensagemChat(input, chatId);
+            const resposta: ChatMensagemResponse = await enviarMensagemChat(input, chatId, selectedMunicipioNome);
             
             if (isNovoChat && resposta.chat_id) {
                 navigate(`/chatbot?chat_id=${resposta.chat_id}`, { replace: true });
@@ -333,6 +335,21 @@ export default function Chatbot() {
                     </div>
 
                 
+                    {selectedMunicipioNome && (
+                        <div className={styles.filterBar}>
+                            <span className={styles.filterBarLabel}>
+                                Filtrando por: <strong>{selectedMunicipioNome}</strong>
+                            </span>
+                            <span
+                                className={styles.filterBarClear}
+                                onClick={clearFilters} 
+                                title="Remover filtro"
+                            >
+                                ✕
+                            </span>
+                        </div>
+                    )}
+
                     <div className={`
                         ${styles.chatInputContainer} 
                         ${!chatIniciado ? styles.welcomeInput : ""} 
