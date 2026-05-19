@@ -324,7 +324,37 @@ html {
     max-height: none;
   }
 
-  .chatInputContainer {
+.filterBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    margin: 0 1.25rem;
+    background: var(--background-secondary);
+    border: 1px solid var(--orange-main);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.filterBarLabel {
+    color: var(--orange-main);
+}
+
+.filterBarClear {
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.filterBarClear:hover {
+    background: var(--background-textBox);
+}
+
+.chatInputContainer {
     position: relative;
     bottom: auto;
     box-shadow: none;

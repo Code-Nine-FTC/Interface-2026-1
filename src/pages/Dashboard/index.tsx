@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTitle } from "../../context/TitleContext"
+import { useFilter } from "../../context/FilterContext"
 
 import Chart from "../../components/ui/Chart/Chart"
 
 import styles from "./Dashboard.module.css"
 import {
     fetchStateDashboard,
+    fetchFullMunicipalityData,
     type RankingItem,
     type StateDashboardResponse,
+    type ResponseMunicipal,
 } from "../../services/dashboardService"
 
 const rankingLabels: Record<keyof StateDashboardResponse["data"]["rankings"], string> = {
@@ -19,11 +22,23 @@ const rankingLabels: Record<keyof StateDashboardResponse["data"]["rankings"], st
     imoveis_rurais: "Imóveis Rurais",
 };
 
+const LAYER_LABELS: Record<string, string> = {
+    imoveis_rurais: "Imóveis Rurais",
+    unidades_conservacao: "Unidades de Conservação",
+    terras_indigenas: "Terras Indígenas",
+    assentamentos: "Assentamentos",
+    quilombolas: "Quilombolas",
+    alertas_desmatamento: "Alertas de Desmatamento",
+};
+
 export default function Dashboard() {
     const { setTitle } = useTitle();
+    const { selectedMunicipioNome, selectedMunicipioId } = useFilter();
     const [stateDashboard, setStateDashboard] = useState<StateDashboardResponse | null>(null);
+    const [municipioData, setMunicipioData] = useState<ResponseMunicipal | null>(null);
     const [selectedRankingType, setSelectedRankingType] = useState<keyof StateDashboardResponse["data"]["rankings"]>("queimadas");
     const [loading, setLoading] = useState(true);
+    const tableRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setTitle("Dashboard de São Paulo");
@@ -56,6 +71,20 @@ export default function Dashboard() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!selectedMunicipioId) {
+            setMunicipioData(null);
+            return;
+        }
+        let cancelled = false;
+        const load = async () => {
+            const data = await fetchFullMunicipalityData(selectedMunicipioId);
+            if (!cancelled) setMunicipioData(data);
+        };
+        void load();
+        return () => { cancelled = true; };
+    }, [selectedMunicipioId]);
+
     const rankingData = useMemo(() => {
         if (!stateDashboard) return [];
         const ranking = stateDashboard.data.rankings[selectedRankingType];
@@ -69,6 +98,24 @@ export default function Dashboard() {
             unit: item.unidade,
         }));
     }, [rankingData]);
+
+    const filteredIndex = useMemo(() => {
+        if (!selectedMunicipioNome) return -1;
+        const nome = selectedMunicipioNome.toLowerCase();
+        return rankingData.findIndex((item) =>
+            item.municipio.toLowerCase().includes(nome)
+        );
+    }, [rankingData, selectedMunicipioNome]);
+
+    useEffect(() => {
+        if (filteredIndex >= 0 && tableRef.current) {
+            const rows = tableRef.current.querySelectorAll("tbody tr");
+            const targetRow = rows[filteredIndex];
+            if (targetRow) {
+                targetRow.scrollIntoView({ block: "center", behavior: "smooth" });
+            }
+        }
+    }, [filteredIndex]);
 
     const formattedTotal = (value: number, suffix = "") =>
         `${value.toLocaleString("pt-BR")} ${suffix}`.trim();
@@ -115,7 +162,32 @@ export default function Dashboard() {
                 <div className={styles.headerContent}>
                     <h1 className={styles.title}>São Paulo — Monitoramento Ambiental</h1>
                     <p className={styles.subtitle}>Indicadores ambientais e rankings municipais</p>
+                    {selectedMunicipioNome && (
+                        <span className={styles.filterChip}>
+                            Filtrando por: {selectedMunicipioNome}
+                        </span>
+                    )}
                 </div>
+
+                {municipioData && (
+                    <div className={styles.municipioDetail}>
+                        <strong>{municipioData.nome}</strong> — camadas disponíveis:
+                        <div className={styles.layerChips}>
+                            {Object.entries(LAYER_LABELS).map(([key, label]) => {
+                                const count = (municipioData as any)[key]?.length ?? 0;
+                                return (
+                                    <span
+                                        key={key}
+                                        className={`${styles.layerChip} ${count > 0 ? styles.layerChipActive : ""}`}
+                                    >
+                                        {label} ({count})
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 <div className={styles.statsRow}>
                     <div className={styles.statItem}>
                         <span className={styles.statNum}>{stateInfo.total_municipios}</span>
@@ -170,7 +242,7 @@ export default function Dashboard() {
                             <h3>Ranking Completo</h3>
                             <span className={styles.topMunicipio}>{topMunicipio?.municipio}</span>
                         </div>
-                        <div className={styles.tableWrapper}>
+                        <div className={styles.tableWrapper} ref={tableRef}>
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
@@ -181,14 +253,21 @@ export default function Dashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rankingData.map((item, idx) => (
-                                        <tr key={`${item.municipio}-${idx}`}>
-                                            <td className={styles.position}>{idx + 1}</td>
-                                            <td>{item.municipio}</td>
-                                            <td className={styles.value}>{formatRankingValue(item)}</td>
-                                            <td className={styles.percent}>{item.percentual_do_estado.toFixed(1)}%</td>
-                                        </tr>
-                                    ))}
+                                    {rankingData.map((item, idx) => {
+                                        const isHighlighted = selectedMunicipioNome &&
+                                            item.municipio.toLowerCase().includes(selectedMunicipioNome.toLowerCase());
+                                        return (
+                                            <tr
+                                                key={`${item.municipio}-${idx}`}
+                                                className={isHighlighted ? styles.highlightedRow : undefined}
+                                            >
+                                                <td className={styles.position}>{idx + 1}</td>
+                                                <td>{item.municipio}</td>
+                                                <td className={styles.value}>{formatRankingValue(item)}</td>
+                                                <td className={styles.percent}>{item.percentual_do_estado.toFixed(1)}%</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
