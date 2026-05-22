@@ -3,6 +3,7 @@ import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
 import ChatInput from "../../components/ui/ChatInput/ChatInput";
 import ChatMessage, { Mensagem } from "../../components/ui/Chat/ChatMessage";
+import RecommendedQuestions from "../../components/ui/RecommendedQuestions/RecommendedQuestions";
 import styles from "./Chatbot.module.css";
 import logoAtlas from "../../assets/logo.svg";
 import { enviarMensagemChat, feedbackChat, ChatMensagemResponse, Mapa } from "../../services/chatService";
@@ -206,8 +207,11 @@ export default function Chatbot() {
         }
     }, [mensagens]);
 
-    const handleEnviarMensagem = async () => {
-        if (!input.trim()) return;
+
+    const handleEnviarMensagem = async (textoAlternativo?: string) => {
+        const textoParaEnviar = typeof textoAlternativo === "string" ? textoAlternativo : input;
+        
+        if (!textoParaEnviar.trim()) return;
 
         const isNovoChat = !chatId;
 
@@ -220,16 +224,16 @@ export default function Chatbot() {
 
         const novaMensagem: Mensagem = {
             id: Date.now().toString(),
-            texto: input,
+            texto: textoParaEnviar,
             tipo: "usuario"
         };
 
         setMensagens(prev => [...prev, novaMensagem]);
-        setInput("");
+        setInput(""); 
         setDigitando(true);
 
         try {
-            const resposta: ChatMensagemResponse = await enviarMensagemChat(input, chatId, selectedMunicipioNome);
+            const resposta: ChatMensagemResponse = await enviarMensagemChat(textoParaEnviar, chatId, selectedMunicipioNome);
             
             if (isNovoChat && resposta.chat_id) {
                 navigate(`/chatbot?chat_id=${resposta.chat_id}`, { replace: true });
@@ -284,7 +288,7 @@ export default function Chatbot() {
                 
                 <div className={styles.chatContainer}>
                     
-                    {/* TELA DE BOAS-VINDAS (FIXA E CENTRALIZADA) */}
+                   
                     {!chatIniciado && (
                     <div className={`${styles.welcomeArea} ${exitandoWelcome ? styles.fadeOut : ""}`}>
                         <div className={styles.welcomeContent}>
@@ -353,11 +357,19 @@ export default function Chatbot() {
                     <div className={`
                         ${styles.chatInputContainer} 
                         ${!chatIniciado ? styles.welcomeInput : ""} 
+                        ${mostrarMapa && dadosMapa ? styles.withMap : ""} 
                     `}>
+                        
+                        {(!chatIniciado || exitandoWelcome) && (
+                            <div className={`${styles.suggestionsWrapper} ${exitandoWelcome ? styles.fadeOut : ""}`}>
+                                <RecommendedQuestions onSelect={(pergunta) => handleEnviarMensagem(pergunta)} />
+                            </div>
+                        )}
+
                         <ChatInput
                             value={input}
                             onChange={setInput}
-                            onSend={handleEnviarMensagem}
+                            onSend={() => handleEnviarMensagem()}
                         />
                     </div>
                 </div>
@@ -377,4 +389,4 @@ export default function Chatbot() {
             </div>
         </div>
     );
-    }
+}
