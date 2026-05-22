@@ -3,50 +3,34 @@
   flex-direction: column;
   width: 100%;
   position: relative;
-  min-height: calc(100dvh - 80px);
-  overflow: hidden;
 }
 
 .chatLayout {
   width: 100%;
-  /* max-width: 1200px; */
+  max-width: 1200px;
   display: grid;
-  grid-template-columns: 1fr; 
+  grid-template-columns: 1fr;
   gap: 20px;
-  /* margin: 0 auto;  */
+  margin: 0 auto;
   transition: grid-template-columns 0.3s ease;
 }
 
-.chatLayout.layoutWithMap {
-  width: 100%;
-  max-width: none;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+.chatLayout:has(.mapContainer) {
+  grid-template-columns: 1fr 1fr;
   align-items: start;
-  gap: 16px;
-}
-
-.chatLayout.layoutWithMap .chatContainer {
-  max-width: none;
-  margin: 0;
-  min-width: 0;
-}
-
-.chatLayout.layoutWithMap .mapContainer {
-  min-width: 0;
 }
 
 .chatContainer {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 120px);
-  min-height: calc(100dvh - 120px);
+  height: 100%;
   width: 100%;
   max-width: 850px;
   margin: 0 auto;
   border-radius: 12px;
-  position: relative; 
   overflow: hidden;
-  min-width: 0;
+  border: none;
+  position: relative; 
 }
 
 .pageContainer h1 {
@@ -67,33 +51,36 @@
 }
 
 .messagesArea {
-  flex: 1 1 auto;
-  min-height: 0;
   width: 100%;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-bottom: 24px;
-  overflow-y: auto;
+  padding-bottom: 160px;
 }
 
 .chatInputContainer {
-  position: sticky; 
+  position: fixed;
   bottom: 0;
+  left: 58%;
+  transform: translateX(-50%);
   width: 100%;
+  max-width: 850px;
   padding: 20px;
   z-index: 100;
   background: var(--background-primary);
   box-shadow: 0 -15px 20px var(--background-primary);
-  transition: all 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+.chatInputContainer.withMap {
+  left: calc(40%);
+  max-width: 40%;
 }
 
 .chatInputContainer.welcomeInput {
-  position: absolute; 
-  bottom: 40%;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 45%; 
+  transform: translate(-50%, 50%);
   background: transparent;
   box-shadow: none;
 }
@@ -105,7 +92,7 @@
 .mapContainer {
   position: sticky;
   top: 80px;
-  height: calc(100dvh - 120px);
+  height: calc(100vh - 120px);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -157,11 +144,12 @@
 }
 
 .welcomeArea {
-  position: absolute; 
-  left: 50%; 
+  position: fixed; 
+  left: 58%; 
   transform: translateX(-50%);
-  bottom: 60%; 
+  bottom: 70%; 
   width: 100%;
+  max-width: 850px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,6 +162,17 @@
   opacity: 0;
 }
 
+.suggestionsWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+
+.suggestionsWrapper.fadeOut {
+  opacity: 0;
+  pointer-events: none;
+}
 
 .welcomeTitle {
   display: flex;
@@ -287,14 +286,13 @@ html {
   }
 
   .messagesArea {
-    max-height: none;
+    max-height: 400px;
   }
 }
 
 @media (max-width: 768px) {
   .pageContainer {
     padding: 10px !important;
-    min-height: calc(100dvh - 20px);
   }
 
   .pageContainer h1 {
@@ -302,70 +300,11 @@ html {
   }
 
   .chatLayout {
-    gap: 10px;
-    height: calc(100dvh - 20px);
-    max-width: none;
-  }
-
-  .chatLayout.layoutWithMap {
-    grid-template-columns: 1fr;
-    grid-template-rows: 7fr 3fr;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .chatContainer {
-    height: 100%;
-    min-height: 0;
-    max-width: none;
+    gap: 15px;
   }
 
   .messagesArea {
-    max-height: none;
-  }
-
-.filterBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem 1rem;
-    margin: 0 1.25rem;
-    background: var(--background-secondary);
-    border: 1px solid var(--orange-main);
-    border-radius: 8px;
-    font-size: 0.8rem;
-    color: var(--text-primary);
-}
-
-.filterBarLabel {
-    color: var(--orange-main);
-}
-
-.filterBarClear {
-    cursor: pointer;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    transition: background 0.2s;
-}
-
-.filterBarClear:hover {
-    background: var(--background-textBox);
-}
-
-.chatInputContainer {
-    position: relative;
-    bottom: auto;
-    box-shadow: none;
-    padding: 12px 12px 0;
-    z-index: 5;
-  }
-
-  .mapContainer {
-    position: relative;
-    top: auto;
-    height: 100%;
+    max-height: 300px;
   }
 
   
