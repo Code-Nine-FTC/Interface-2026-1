@@ -1,0 +1,46 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.topRow {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.bottomRow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.badge {
+    background-color: var(--background-primary);
+    color: var(--orange-main);
+    border: 1px solid var(--orange-light);
+    border-radius: 24px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    white-space: normal; 
+    text-align: center;
+    max-width: 95%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.badge:hover {
+    background-color: var(--orange-main);
+    color: var(--background-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
