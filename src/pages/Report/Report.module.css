@@ -1,0 +1,118 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    box-sizing: border-box;
+}
+
+
+.header {
+    display: flex;
+    justify-content: flex-end; 
+    padding-bottom: 0.5rem;
+}
+
+.refreshButton {
+    background: transparent;
+    border: none; 
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--orange-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.refreshButton:hover {
+    opacity: 0.8;
+    transform: scale(1.05); 
+}
+
+
+.mainPanel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1; 
+    gap: 2rem;
+}
+
+.reportDocument {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 800px; /* Largura mais realista para documento */
+    min-height: 1122px; /* Proporção A4 (aprox 210x297mm) */
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--shared-hr, #e5e7eb);
+    padding: 3rem; /* Margens generosas como um papel */
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    color: #1e293b;
+    box-sizing: border-box;
+}
+
+/* Esconda o mapa do canvas, pois vamos tratá-lo separadamente */
+.mapWrapper {
+    width: 100%; 
+    height: 350px; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    border: 1px solid #cbd5e1;
+    margin-bottom: 20px;
+}
+
+
+.skeletonTitle {
+    height: 10px; 
+    background-color: var(--shared-hr, #e5e7eb);
+    border-radius: 4px;
+    opacity: 0.7;
+}
+
+.skeletonLine {
+    height: 10px; 
+    background-color: var(--shared-hr, #e5e7eb);
+    border-radius: 4px;
+    opacity: 0.5;
+}
+
+.skeletonBox {
+    width: 100%;
+    height: 120px; 
+    background-color: var(--shared-hr, #e5e7eb);
+    border-radius: 8px;
+    opacity: 0.4;
+    margin: 1rem 0;
+}
+
+
+.generateButton {
+    background-color: var(--orange-main, #f97316);
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    padding: 0.8rem 2.5rem;
+    font-size: var(--font-size-sm); 
+    font-weight: 00;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.generateButton:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.generateButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

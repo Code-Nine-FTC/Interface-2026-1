@@ -24,7 +24,7 @@
 .badge {
     background-color: var(--background-primary);
     color: var(--orange-main);
-    border: 1px solid var(--orange-light);
+    border: 1px solid var(--orange-main);
     border-radius: 24px;
     padding: 10px 18px;
     font-size: 14px;
