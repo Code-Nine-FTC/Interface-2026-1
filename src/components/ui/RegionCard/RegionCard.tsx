@@ -61,11 +61,11 @@ const indicatorList = [
                 <div className={styles.info}>
                     <p>
                         <strong>Área analisada:</strong>{" "}
-                        {data.areaKm2 ? `${data.areaKm2} km²` : "—"}
+                        {data.areaKm2 ? `${data.areaKm2.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} km²` : "—"}
                     </p>
                     <p>
                         <strong>Ocorrências de queimadas:</strong>{" "}
-                        {data.burnedOccurrences ?? "—"}
+                        {data.burnedOccurrences != null ? data.burnedOccurrences.toLocaleString("pt-BR") : "—"}
                     </p>
                 </div>
             </div>

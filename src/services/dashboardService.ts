@@ -197,42 +197,37 @@ function normalizeRegion(raw: unknown, index: number): RegionData | null {
 
     const record = raw as Record<string, unknown>;
     const name =
-        getString(record.name) ??
         getString(record.nome) ??
+        getString(record.name) ??
         getString(record.municipio) ??
-        getString(record.municipio_nome) ??
         getString(record.label) ??
         `Município ${index + 1}`;
 
     return {
         id:
             getString(record.id) ??
+            getString(record.codigo_ibge) ??
             getString(record.municipio_id) ??
-            getString(record.municipioId) ??
-            getString(record.codigo) ??
             index,
         name,
         areaKm2:
+            toNumber(record.area_ha) ??
             toNumber(record.areaKm2) ??
-            toNumber(record.area_km2) ??
-            toNumber(record.area) ??
-            toNumber(record.area_total),
+            toNumber(record.area_km2),
         burnedOccurrences:
+            toNumber(record.focos_queimada_periodo) ??
             toNumber(record.burnedOccurrences) ??
-            toNumber(record.burned_occurrences) ??
             toNumber(record.ocorrencias_queimadas) ??
-            toNumber(record.ocorrencias) ??
             toNumber(record.queimadas) ??
             0,
         indicators: normalizeIndicators(record),
         score:
+            toNumber(record.score_geral) ??
             toNumber(record.score) ??
-            toNumber(record.pontuacao) ??
-            toNumber(record.indice) ??
-            toNumber(record.score_ambiental),
+            toNumber(record.pontuacao),
         risk:
-            normalizeRisk(record.risk) ??
             normalizeRisk(record.risco) ??
+            normalizeRisk(record.risk) ??
             normalizeRisk(record.classificacao_risco),
     };
 }
@@ -535,7 +530,7 @@ export function mapEstadoToRegionData(estado: EstadoData): RegionData {
     return {
         id: estado.id,
         name: estado.nome,
-        areaKm2: estado.area_protegida_total_ha / 100,
+        areaKm2: Number((estado.area_protegida_total_ha / 100).toFixed(2)),
         burnedOccurrences: fireCount,
         indicators: {
             queimadas: fireCount > 0,
