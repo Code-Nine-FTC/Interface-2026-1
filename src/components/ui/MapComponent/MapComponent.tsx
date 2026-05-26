@@ -142,6 +142,10 @@ function formatarData(valor: unknown): string | null {
   return Number.isNaN(d.getTime()) ? valor : d.toLocaleString('pt-BR');
 }
 
+function formatNum(value: number, decimals: number = 2): string {
+  return value.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
 function escapeHtml(valor: unknown): string {
   return String(valor).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;',
@@ -167,9 +171,9 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
       titulo = String(properties.nome_imovel ?? 'Imóvel rural');
       if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
       if (properties.codigo_car) linhas.push(linhaPopup('CAR', properties.codigo_car));
-      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
-      if (typeof properties.num_queimadas === 'number') linhas.push(linhaPopup('Focos relacionados', properties.num_queimadas));
-      if (typeof properties.dist_min_m === 'number') linhas.push(linhaPopup('Distância mínima', `${Math.round(properties.dist_min_m)} m`));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${formatNum(properties.area_ha, 4)} ha`));
+      if (typeof properties.num_queimadas === 'number') linhas.push(linhaPopup('Focos relacionados', formatNum(properties.num_queimadas, 0)));
+      if (typeof properties.dist_min_m === 'number') linhas.push(linhaPopup('Distância mínima', `${formatNum(properties.dist_min_m)} m`));
       if (properties.nivel_risco_ambiental) linhas.push(linhaPopup('Risco', properties.nivel_risco_ambiental));
       break;
     }
@@ -179,8 +183,8 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
       if (data) linhas.push(linhaPopup('Data', data));
       if (properties.sensor) linhas.push(linhaPopup('Sensor', properties.sensor));
       else if (properties.fonte_sensor) linhas.push(linhaPopup('Sensor', properties.fonte_sensor));
-      if (typeof properties.intensidade === 'number') linhas.push(linhaPopup('Intensidade', properties.intensidade));
-      if (typeof properties.risco_fogo === 'number') linhas.push(linhaPopup('Risco fogo', properties.risco_fogo));
+      if (typeof properties.intensidade === 'number') linhas.push(linhaPopup('Intensidade', formatNum(properties.intensidade)));
+      if (typeof properties.risco_fogo === 'number') linhas.push(linhaPopup('Risco fogo', formatNum(properties.risco_fogo)));
       break;
     }
     case 'imovel_rural_desmatamento':
@@ -188,7 +192,7 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
       titulo = String(properties.nome_imovel ?? 'Imóvel rural');
       if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
       if (properties.codigo_car) linhas.push(linhaPopup('CAR', properties.codigo_car));
-      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${formatNum(properties.area_ha, 4)} ha`));
       break;
     }
     case 'desmatamento_alerta_relacionado': {
@@ -196,19 +200,19 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
       if (properties.tipo_alerta) linhas.push(linhaPopup('Tipo', properties.tipo_alerta));
       const data = formatarData(properties.data_ocorrencia);
       if (data) linhas.push(linhaPopup('Data', data));
-      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${formatNum(properties.area_ha, 4)} ha`));
       break;
     }
     case 'territorio_quilombola_relacionado': {
       titulo = String(properties.nome ?? 'Território quilombola');
       if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
-      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${properties.area_ha} ha`));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${formatNum(properties.area_ha, 4)} ha`));
       break;
     }
     default: {
       titulo = String(properties.nome ?? properties.municipio ?? 'Sem nome');
       linhas.push(linhaPopup('Tipo', tipo));
-      if (typeof properties.intensidade === 'number') linhas.push(linhaPopup('Intensidade', properties.intensidade));
+      if (typeof properties.intensidade === 'number') linhas.push(linhaPopup('Intensidade', formatNum(properties.intensidade)));
       if (properties.fase) linhas.push(linhaPopup('Fase', properties.fase));
     }
   }
@@ -269,7 +273,7 @@ export default function MapComponent({
                 <Popup>
                   <strong>{localizacao.nome}</strong>
                   <br />
-                  Índice: {localizacao.indice} µg/m³
+                  Índice: {localizacao.indice.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} µg/m³
                 </Popup>
               </Marker>
             );

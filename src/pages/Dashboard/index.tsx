@@ -180,7 +180,7 @@ export default function Dashboard() {
                                         key={key}
                                         className={`${styles.layerChip} ${count > 0 ? styles.layerChipActive : ""}`}
                                     >
-                                        {label} ({count})
+                                        {label} ({count.toLocaleString("pt-BR")})
                                     </span>
                                 );
                             })}
@@ -190,7 +190,7 @@ export default function Dashboard() {
 
                 <div className={styles.statsRow}>
                     <div className={styles.statItem}>
-                        <span className={styles.statNum}>{stateInfo.total_municipios}</span>
+                        <span className={styles.statNum}>{formattedTotal(stateInfo.total_municipios)}</span>
                         <span className={styles.statName}>Municípios</span>
                     </div>
                     <div className={styles.statItem}>
@@ -199,7 +199,7 @@ export default function Dashboard() {
                         <span className={styles.statName}>Área protegida</span>
                     </div>
                     <div className={styles.statItem}>
-                        <span className={styles.statNum}>{stateInfo.focos_queimada_periodo}</span>
+                        <span className={styles.statNum}>{formattedTotal(stateInfo.focos_queimada_periodo)}</span>
                         <span className={styles.statName}>Focos</span>
                     </div>
                     <div className={styles.statItem}>
@@ -264,7 +264,7 @@ export default function Dashboard() {
                                                 <td className={styles.position}>{idx + 1}</td>
                                                 <td>{item.municipio}</td>
                                                 <td className={styles.value}>{formatRankingValue(item)}</td>
-                                                <td className={styles.percent}>{item.percentual_do_estado.toFixed(1)}%</td>
+                                                <td className={styles.percent}>{item.percentual_do_estado.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%</td>
                                             </tr>
                                         );
                                     })}
