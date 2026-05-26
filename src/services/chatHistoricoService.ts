@@ -43,3 +43,20 @@ export async function buscarHistoricoChat(chat_id: string): Promise<HistoricoCha
 
   return response.json();
 }
+
+
+export interface ResumoRelatorioData {
+  resumo: string;
+  fontes: Array<{ nome: string; orgao?: string; url?: string }>;
+}
+
+export async function buscarResumoRelatorio(chatId: string): Promise<ResumoRelatorioData> {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/chat/${chatId}/resumo`);
+        if (!response.ok) throw new Error("Erro ao buscar resumo");
+        return response.json();
+    } catch (error) {
+        console.error("Erro ao buscar o resumo condensado:", error);
+        throw error;
+    }
+}
