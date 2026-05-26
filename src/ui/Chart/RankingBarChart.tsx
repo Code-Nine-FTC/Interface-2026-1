@@ -42,7 +42,7 @@ export function RankingBarChart({ title, data, color = '#1976d2' }: RankingBarCh
           label: (context: any) => {
             const idx = context.dataIndex;
             const unit = data[idx]?.unidade || '';
-            return `${context.parsed.y} ${unit}`;
+            return `${context.parsed.y.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${unit}`;
           },
         },
       },
