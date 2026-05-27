@@ -1,0 +1,533 @@
+.page {
+    min-height: 100svh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(12px, 3vw, 32px);
+}
+
+.modalPage {
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.backgroundGlow {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(255, 138, 36, 0.15), transparent 30%),
+        radial-gradient(circle at 80% 15%, rgba(207, 105, 15, 0.12), transparent 24%),
+        radial-gradient(circle at 80% 80%, rgba(255, 138, 36, 0.08), transparent 28%);
+    pointer-events: none;
+}
+
+.shell {
+    position: relative;
+    z-index: 1;
+    width: min(1240px, 100%);
+    min-height: clamp(620px, 80svh, 760px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.98fr);
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 36px 110px rgba(26, 35, 50, 0.18);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(18px);
+}
+
+.modalBackdrop {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 24, 31, 0.55);
+    backdrop-filter: blur(12px);
+}
+
+.modalShell {
+    width: min(1040px, 100%);
+    max-height: min(88svh, 820px);
+    overflow: hidden;
+    border-radius: 28px;
+    box-shadow: 0 32px 100px rgba(18, 24, 35, 0.3);
+}
+
+.brandPanel {
+    color: #ffffff;
+    padding: clamp(20px, 4vw, 48px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(16px, 2.5vw, 28px);
+}
+
+.brandBadge {
+    width: min(100%, 160px);
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 18px 40px rgba(65, 35, 6, 0.18);
+}
+
+.brandLogo {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.brandCopy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 460px;
+}
+
+.kicker,
+.formEyebrow {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.kicker {
+    background: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.96);
+}
+
+.brandCopy h1 {
+    margin: 0;
+    font-size: clamp(1.75rem, 3vw, 2.7rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    max-width: 13ch;
+}
+
+.brandCopy p {
+    margin: 0;
+    max-width: 38ch;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.featureList {
+    display: grid;
+    gap: 10px;
+    max-width: 320px;
+}
+
+.featureItem {
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.96);
+}
+
+.formPanel {
+    position: relative;
+    background: var(--background-primary);
+    padding: clamp(20px, 4vw, 48px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 22px;
+}
+
+.closeButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(26, 35, 50, 0.12);
+    z-index: 2;
+}
+
+.mobileBrand {
+    display: none;
+}
+
+.mobileLogoBadge {
+    display: grid;
+    place-items: center;
+}
+
+.mobileLogo {
+    display: block;
+}
+
+.mobileBrandText {
+    display: inline-block;
+}
+
+.themeToggle {
+    align-self: flex-end;
+    border: 1px solid color-mix(in srgb, var(--orange-main) 24%, transparent);
+    background: color-mix(in srgb, var(--orange-main) 8%, white);
+    color: var(--orange-secondary);
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.formHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.formEyebrow {
+    background: color-mix(in srgb, var(--orange-main) 12%, white);
+    color: var(--orange-secondary);
+}
+
+.formHeader h2 {
+    margin: 0;
+    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+    color: var(--text-primary);
+    line-height: 1.05;
+}
+
+.formHeader p {
+    margin: 0;
+    max-width: 34ch;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: min(100%, 420px);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field span {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.field input {
+    width: 100%;
+    border: 1px solid rgba(108, 117, 132, 0.16);
+    background: var(--background-secondary);
+    border-radius: 12px;
+    padding: 0.85rem 0.95rem;
+    font: inherit;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.field input::placeholder {
+    color: #9aa3b2;
+}
+
+.field input:focus {
+    border-color: color-mix(in srgb, var(--orange-main) 60%, white);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--orange-main) 15%, transparent);
+}
+
+.linkButton {
+    border: none;
+    background: transparent;
+    color: var(--orange-secondary);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    align-self: flex-start;
+}
+
+.submitButton {
+    border: none;
+    border-radius: 12px;
+    padding: 0.95rem 1.1rem;
+    background: linear-gradient(135deg, var(--orange-main), var(--orange-secondary));
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.94rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 16px 30px rgba(255, 138, 36, 0.22);
+}
+
+.submitButton:hover {
+    filter: brightness(1.03);
+}
+
+.helperText {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+@media (max-width: 1100px) {
+    .page {
+        padding: 14px;
+    }
+
+    .shell {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        max-width: 760px;
+        border-radius: 24px;
+    }
+
+    .brandPanel,
+    .formPanel {
+        padding: 24px;
+    }
+
+    .brandBadge {
+        width: min(100%, 180px);
+    }
+
+    .brandCopy h1 {
+        max-width: none;
+    }
+
+    .form {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .backgroundGlow {
+        display: none;
+    }
+
+    .page {
+        padding: 0;
+        align-items: stretch;
+        background:
+            radial-gradient(circle at 50% 10%, rgba(255, 138, 36, 0.18), transparent 24%),
+            radial-gradient(circle at 20% 82%, rgba(207, 105, 15, 0.12), transparent 18%),
+            radial-gradient(circle at 80% 15%, rgba(255, 180, 112, 0.12), transparent 16%),
+            linear-gradient(180deg, #fff2e3 0%, #fffaf4 28%, var(--background-primary) 100%) !important;
+    }
+
+    .shell {
+        width: 100%;
+        height: 100svh;
+        min-height: 100svh;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+        grid-template-columns: 1fr;
+        max-width: 100%;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .brandPanel {
+        display: none;
+    }
+
+    .formPanel {
+        width: 100%;
+        max-width: none;
+        min-height: 0;
+        margin: 0;
+        flex: 1 1 auto;
+        padding: 22px 20px 26px;
+        gap: 16px;
+        background:
+            radial-gradient(circle at 18% 0%, rgba(255, 138, 36, 0.12), transparent 20%),
+            radial-gradient(circle at 100% 20%, rgba(207, 105, 15, 0.1), transparent 18%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.92), #fff9f2 58%, var(--background-primary) 100%);
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -18px 40px rgba(26, 35, 50, 0.08);
+        border-top: 1px solid rgba(255, 138, 36, 0.16);
+    }
+
+    .formPanel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 82% 14%, rgba(255, 138, 36, 0.12), transparent 12%),
+            radial-gradient(circle at 22% 86%, rgba(255, 138, 36, 0.08), transparent 14%),
+            linear-gradient(180deg, rgba(255, 138, 36, 0.05), transparent 18%);
+    }
+
+    .mobileBrand {
+        display: flex;
+        width: min(100%, 460px);
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+        padding-bottom: 6px;
+    }
+
+    .mobileLogo {
+        width: min(84px, 22vw);
+        height: auto;
+        display: block;
+        filter: drop-shadow(0 10px 18px rgba(255, 138, 36, 0.18));
+    }
+
+    .mobileBrandText {
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--orange-secondary);
+    }
+
+    .themeToggle {
+        display: none;
+    }
+
+    .submitButton {
+        width: 100%;
+    }
+
+    .formHeader {
+        gap: 6px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .formHeader h2 {
+        font-size: 1.55rem;
+    }
+
+    .formHeader p {
+        font-size: 0.94rem;
+        max-width: 100%;
+    }
+
+    .form {
+        gap: 14px;
+        width: min(100%, 460px);
+    }
+
+    .field {
+        gap: 8px;
+        width: 100%;
+    }
+
+    .field span {
+        font-size: 0.9rem;
+    }
+
+    .field input {
+        padding: 1rem 1.05rem;
+        border-radius: 14px;
+    }
+
+    .linkButton {
+        font-size: 0.9rem;
+        align-self: center;
+    }
+
+    .submitButton {
+        padding: 1rem 1.1rem;
+        font-size: 1rem;
+        border-radius: 14px;
+    }
+
+    .helperText {
+        display: block;
+        max-width: 420px;
+    }
+}
+
+@media (max-width: 600px) {
+    .shell {
+        height: 100svh;
+        min-height: 100svh;
+    }
+
+    .formPanel {
+        max-width: 100%;
+        min-height: 0;
+        padding: 18px 14px 20px;
+        gap: 12px;
+        border-radius: 24px 24px 0 0;
+        align-items: center;
+        border-top: 1px solid rgba(255, 138, 36, 0.18);
+    }
+
+    .mobileLogoBadge {
+        width: 46px;
+        height: 46px;
+        flex-basis: 46px;
+        border-radius: 16px;
+    }
+
+    .mobileLogo {
+        width: min(72px, 24vw);
+    }
+
+    .mobileBrandText {
+        font-size: 0.82rem;
+    }
+
+    .formHeader h2 {
+        font-size: 1.35rem;
+    }
+
+    .formHeader p {
+        font-size: 0.92rem;
+    }
+
+    .field input {
+        padding: 0.92rem 1rem;
+    }
+
+    .submitButton {
+        padding: 0.92rem 1rem;
+    }
+}

@@ -7,9 +7,10 @@ import { useTitle } from "../../../context/TitleContext";
 
 type NavbarProps = {
     pageTitle?: string;
+    onLoginClick?: () => void;
 };
 
-export default function Navbar({ pageTitle }: NavbarProps) {
+export default function Navbar({ pageTitle, onLoginClick }: NavbarProps) {
     const { theme, toggleTheme, mode } = useTheme();
     const { isLoading } = useLoading();
 
@@ -69,14 +70,10 @@ export default function Navbar({ pageTitle }: NavbarProps) {
         </svg>
     );
 
-    const LangIcon = () => (
+    const UserIcon = () => (
         <svg width="24" height="24" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.75 14L19.25 24.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M7 24.5L17.5 14L21 8.75" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M3.5 8.75H24.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12.25 3.5H14" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M38.5 38.5L29.75 21L21 38.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M24.5 31.5H35" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="21" cy="15.75" r="6.75" stroke="currentColor" strokeWidth="4" />
+            <path d="M9 35C9 28.3726 14.3726 23 21 23C27.6274 23 33 28.3726 33 35" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 
@@ -111,7 +108,14 @@ export default function Navbar({ pageTitle }: NavbarProps) {
                     </Skeleton>
 
                     <Skeleton isLoading={isLoading} variant="rectangular">
-                        <LangIcon />
+                        <button
+                            type="button"
+                            className={styles.iconButton}
+                            onClick={onLoginClick}
+                            aria-label="Abrir login"
+                        >
+                            <UserIcon />
+                        </button>
                     </Skeleton>
                 </div>
             </div>
