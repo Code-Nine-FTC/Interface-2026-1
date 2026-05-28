@@ -9,7 +9,6 @@ export default function Layout({ children }: any) {
         "/": "Chatbot",
         "/dashboard": "Dashboard",
         "/relatorio": "Relatório",
-        "/filtros": "Filtrar dados",
     };
     
     const pageTitle = pageTitles[location.pathname] || "Página";
