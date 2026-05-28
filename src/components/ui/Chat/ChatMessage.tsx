@@ -10,6 +10,9 @@ export interface Mensagem {
     autor?: string;
     fontes?: FonteCitada[];
     mapa?: Mapa;
+        eh_fallback?: boolean;
+        tipo_fallback?: string;
+        sugestoes?: string[];
 }
 
 interface ChatMessageProps {
@@ -17,13 +20,16 @@ interface ChatMessageProps {
     feedbackDoHistorico: Set<string>;
     feedbackEnviado: Record<string, 1 | -1>;
     onFeedback: (id: string, avaliacao: 1 | -1) => void;
+    onSelectSugestao?: (s: string) => void;
 }
+import FallbackResponse from "../FallbackResponse/FallbackResponse";
 
 export default function ChatMessage({
     msg,
     feedbackDoHistorico,
     feedbackEnviado,
-    onFeedback
+    onFeedback,
+    onSelectSugestao
 }: ChatMessageProps) {
     const [copiadoQgis, setCopiadoQgis] = React.useState(false);
 
@@ -108,6 +114,16 @@ export default function ChatMessage({
                                 </div>
                             </>
                         )}
+                    </div>
+                )}
+                {msg.eh_fallback && (
+                    <div className={styles.fallbackWrapper}>
+                        <FallbackResponse
+                            tipo_fallback={(msg.tipo_fallback as any) || "generic_fallback"}
+                            mensagem_usuario={msg.texto}
+                            sugestoes={msg.sugestoes}
+                            onSelectSugestao={onSelectSugestao}
+                        />
                     </div>
                 )}
             </div>
