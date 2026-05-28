@@ -81,10 +81,14 @@
 }
 
 .chatInputContainer.welcomeInput {
-  bottom: 45%; 
-  transform: translate(-50%, 50%);
+  bottom: max(12px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
   background: transparent;
   box-shadow: none;
+  padding: 0 20px max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2vh, 18px);
 }
 
 .hidden {
@@ -168,9 +172,10 @@
   position: fixed; 
   left: calc(50vw + (var(--sidebar-width) / 2)); 
   transform: translateX(-50%);
-  bottom: 70%; 
+  top: clamp(92px, 16vh, 170px);
   width: 100%;
   max-width: 850px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,6 +186,10 @@
 
 .welcomeArea.fadeOut {
   opacity: 0;
+}
+
+.welcomeContent {
+  width: 100%;
 }
 
 .suggestionsWrapper {
@@ -199,54 +208,66 @@
   display: flex;
   flex-direction: column;
   align-items: center; 
-  gap: 10px;
+  gap: clamp(8px, 1.8vh, 14px);
   width: 100%;
+  max-width: min(820px, 100%);
+  text-align: center;
 }
 
 .line1, .line2 {
   color: var(--orange-main);
-  font-size: 20px;
+  font-size: clamp(1rem, 2.1vw, 1.35rem);
   font-weight: 600;
   margin: 0;
-  
+  line-height: 1.35;
   display: block;
   overflow: hidden;
   white-space: nowrap;
-  width: 0; 
+  width: 0;
   border-right: 3px solid transparent;
 }
 
 
 .line1 {
-  animation: 
-    typingEffect 1.5s steps(30, end) forwards,
-    hideCursor 0s forwards 1.5s; 
-  border-right: 3px solid var(--orange-main);
+  font-size: clamp(1.35rem, 3.1vw, 2rem);
+  font-weight: 700;
+  animation:
+    typingEffect 2.45s steps(30, end) forwards,
+    hideCursor 0s forwards 1.5s;
+  border-right-color: var(--orange-main);
 }
 
 .line2 {
-  animation: 
-    typingEffect 2.6s steps(50, end) 1.5s forwards, 
+  max-width: 60ch;
+  font-weight: 500;
+  animation:
+    typingEffect 2.6s steps(50, end) 1.5s forwards,
     blinkCursor 0.75s step-end 1.5s infinite;
 }
 
 @keyframes typingEffect {
-  from { 
-    width: 0; 
+  from {
+    width: 0;
   }
-  to { 
-    width: 100%; 
-    max-width: fit-content; 
+  to {
+    width: 100%;
+    max-width: fit-content;
   }
 }
 
 @keyframes hideCursor {
-  to { border-right-color: transparent; }
+  to {
+    border-right-color: transparent;
+  }
 }
 
 @keyframes blinkCursor {
-  from, to { border-right-color: transparent; }
-  50% { border-right-color: var(--orange-main); }
+  from, to {
+    border-right-color: transparent;
+  }
+  50% {
+    border-right-color: var(--orange-main);
+  }
 }
 
 @keyframes fadeIn {
@@ -324,9 +345,30 @@ html {
     max-width: 90%;
   }
 
+  .chatInputContainer.welcomeInput {
+    max-width: 100%;
+    padding: 0 10px max(10px, env(safe-area-inset-bottom));
+  }
+
   .welcomeArea {
     left: 50%;
     transform: translateX(-50%);
+    max-width: 100%;
+    top: clamp(82px, 13vh, 128px);
+    padding: 0 16px;
+  }
+
+  .line1,
+  .line2 {
+    animation: none;
+    overflow: visible;
+    white-space: normal;
+    width: auto;
+    border-right: none;
+  }
+
+  .line2 {
+    max-width: 100%;
   }
 }
 
@@ -349,11 +391,14 @@ html {
 
   
   .welcomeTitle {
-    font-size: 20px;
-    white-space: normal;
-    border-right: none;
-    width: auto;
-    animation: fadeIn 1s ease forwards;
-    padding: 0 20px;
+    padding: 0 8px;
+  }
+
+  .line1 {
+    font-size: clamp(1.2rem, 5.2vw, 1.6rem);
+  }
+
+  .line2 {
+    font-size: clamp(0.92rem, 3.8vw, 1.08rem);
   }
 }

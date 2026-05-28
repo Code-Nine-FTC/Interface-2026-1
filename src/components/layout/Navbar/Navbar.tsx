@@ -107,7 +107,7 @@ export default function Navbar({
                         <HamburgerIcon isOpen={isMobileMenuOpen} />
                     </button>
 
-                    <Skeleton isLoading={isLoading} variant="rectangular">
+                    <Skeleton isLoading={isLoading} variant="rectangular" fullWidth>
                         <h1
                             className={styles.pageTitle}
                             style={{

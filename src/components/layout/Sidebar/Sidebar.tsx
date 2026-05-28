@@ -198,7 +198,7 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
                                     title={chat.title}
                                 >
                                     <span className={styles.chatListItemText}>{chat.title}</span>
-                                    {hoveredChatId === chat.id && (
+                                    {(isMobileViewport ? currentChatId === chat.id : hoveredChatId === chat.id) && (
                                         <span
                                             className={styles.deleteBtn}
                                             onClick={(e) => handleExcluirChat(e, chat.id)}
