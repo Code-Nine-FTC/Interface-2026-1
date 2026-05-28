@@ -65,6 +65,19 @@ export interface ChatMensagemResponse {
   status?: string;
 }
 
+export interface FallbackInfo {
+  tipo_fallback: "nlp_fallback" | "data_fallback" | "connection_fallback" | "generic_fallback";
+  mensagem_usuario: string;
+  sugestoes?: string[];
+  retry_count?: number;
+}
+
+export interface ChatMensagemResponseWithFallback extends ChatMensagemResponse {
+  fallback_info?: FallbackInfo | null;
+  eh_fallback?: boolean;
+  tipo_fallback?: string | null;
+}
+
 export async function enviarMensagemChat(
   pergunta: string,
   chat_id: string | null = null,
@@ -102,5 +115,47 @@ export async function feedbackChat(
   });
   if (!response.ok) {
     throw new Error("Erro ao enviar feedback para o backend");
+  }
+}
+
+export async function enviarMensagemComFallback(
+  pergunta: string,
+  chat_id: string | null = null,
+  municipio?: string | null
+): Promise<ChatMensagemResponseWithFallback> {
+  try {
+    const resposta = await enviarMensagemChat(pergunta, chat_id, municipio);
+
+    // Detecta se o backend incluiu informações de fallback
+    const maybe = resposta as any;
+    if (maybe && maybe.fallback_info) {
+      return {
+        ...resposta,
+        fallback_info: maybe.fallback_info,
+        eh_fallback: true,
+        tipo_fallback: maybe.fallback_info.tipo_fallback,
+      };
+    }
+
+    return { ...resposta, eh_fallback: false };
+  } catch (err: any) {
+    // Em caso de erro de comunicação, retorna um fallback genérico
+    const now = Date.now().toString();
+    return {
+      chat_id: now,
+      consulta_id: now,
+      resposta_id: now,
+      texto_resposta: "Desculpe, ocorreu um erro ao comunicar com o backend. Tente novamente.",
+      fontes_citadas: [],
+      status: "erro",
+      eh_fallback: true,
+      tipo_fallback: "generic_fallback",
+      fallback_info: {
+        tipo_fallback: "generic_fallback",
+        mensagem_usuario: pergunta,
+        sugestoes: [],
+        retry_count: 0,
+      },
+    };
   }
 }
