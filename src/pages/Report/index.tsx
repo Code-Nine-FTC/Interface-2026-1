@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { useTitle } from "../../context/TitleContext";
 import { buscarChats, ChatListItem } from "../../services/chatListService";
 import { buscarResumoRelatorio, ResumoRelatorioData, buscarHistoricoChat } from "../../services/chatHistoricoService";
@@ -8,14 +9,129 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import styles from "./Report.module.css";
 
-const RefreshIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-        <path d="M21 3v5h-5"/>
-        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-        <path d="M8 16H3v5"/>
-    </svg>
-);
+
+const normalizeReportMarkdown = (text: string) => {
+    return text
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .filter(line => line.trim() !== "**")
+        .join("\n")
+        .trim();
+};
+
+type PdfTextSegment = {
+    text: string;
+    bold: boolean;
+};
+
+const parseBoldMarkdown = (text: string): PdfTextSegment[] => {
+    const segments: PdfTextSegment[] = [];
+    let cursor = 0;
+
+    while (cursor < text.length) {
+        const start = text.indexOf("**", cursor);
+
+        if (start === -1) {
+            segments.push({ text: text.slice(cursor), bold: false });
+            break;
+        }
+
+        if (start > cursor) {
+            segments.push({ text: text.slice(cursor, start), bold: false });
+        }
+
+        const end = text.indexOf("**", start + 2);
+
+        if (end === -1) {
+            cursor = start + 2;
+            continue;
+        }
+
+        const boldText = text.slice(start + 2, end);
+        if (boldText) {
+            segments.push({ text: boldText, bold: true });
+        }
+
+        cursor = end + 2;
+    }
+
+    return segments.filter(segment => segment.text.length > 0);
+};
+
+const addWrappedMarkdownText = (
+    doc: jsPDF,
+    text: string,
+    x: number,
+    startY: number,
+    maxWidth: number,
+    pageHeight: number,
+    margin: number,
+    lineHeight: number
+) => {
+    let cursorY = startY;
+    const lines = text.replace(/\r\n/g, "\n").split("\n");
+
+    const ensurePageSpace = () => {
+        if (cursorY > pageHeight - margin) {
+            doc.addPage();
+            cursorY = margin;
+        }
+    };
+
+    const drawLine = (lineSegments: PdfTextSegment[]) => {
+        ensurePageSpace();
+
+        let cursorX = x;
+        lineSegments.forEach(segment => {
+            doc.setFont("helvetica", segment.bold ? "bold" : "normal");
+            doc.text(segment.text, cursorX, cursorY);
+            cursorX += doc.getTextWidth(segment.text);
+        });
+
+        cursorY += lineHeight;
+    };
+
+    lines.forEach(line => {
+        const markdownSegments = parseBoldMarkdown(line);
+        let currentLine: PdfTextSegment[] = [];
+        let currentWidth = 0;
+
+        if (markdownSegments.length === 0) {
+            cursorY += lineHeight;
+            return;
+        }
+
+        markdownSegments.forEach(segment => {
+            const parts = segment.text.match(/\s+|\S+/g) || [];
+
+            parts.forEach(part => {
+                if (part.trim() === "" && currentLine.length === 0) {
+                    return;
+                }
+
+                doc.setFont("helvetica", segment.bold ? "bold" : "normal");
+                const partWidth = doc.getTextWidth(part);
+
+                if (currentWidth + partWidth > maxWidth && currentLine.length > 0 && part.trim() !== "") {
+                    drawLine(currentLine);
+                    currentLine = [];
+                    currentWidth = 0;
+                }
+
+                currentLine.push({ text: part, bold: segment.bold });
+                currentWidth += partWidth;
+            });
+        });
+
+        if (currentLine.length > 0) {
+            drawLine(currentLine);
+        }
+    });
+
+    doc.setFont("helvetica", "normal");
+
+    return cursorY;
+};
 
 export default function Report() {
     const { setTitle } = useTitle();
@@ -30,7 +146,7 @@ export default function Report() {
     const [reportData, setReportData] = useState<ResumoRelatorioData | null>(null);
     const [geoJsonData, setGeoJsonData] = useState<any | null>(null);
     
-    // Referência exclusiva para fotografar APENAS o mapa
+   
     const mapRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -82,19 +198,20 @@ export default function Report() {
         carregarDadosRelatorio();
     }, [selectedChatId]);
 
-    // A MÁGICA DE GERAÇÃO PROFISSIONAL DO PDF ACONTECE AQUI
+    
     const handleGenerateReport = async () => {
         if (!reportData) return;
         
         setIsGenerating(true);
         try {
-            // Cria um documento A4 em milímetros
+            
             const doc = new jsPDF("p", "mm", "a4");
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 20; // Margem padrão do PDF
+            const margin = 20; 
             const maxWidth = pageWidth - (margin * 2);
-            let cursorY = margin; // Aponta onde a "caneta" vai escrever
+            const resumoRelatorio = normalizeReportMarkdown(reportData.resumo);
+            let cursorY = margin; 
 
             // --- CABEÇALHO ---
             doc.setFont("helvetica", "bold");
@@ -112,12 +229,11 @@ export default function Report() {
             doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, pageWidth / 2, cursorY, { align: "center" });
             cursorY += 15;
 
-            // Linha divisória
             doc.setDrawColor(200, 200, 200);
             doc.line(margin, cursorY, pageWidth - margin, cursorY);
             cursorY += 15;
 
-            // --- CORPO DO TEXTO (SÍNTESE) ---
+            
             doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
@@ -125,25 +241,15 @@ export default function Report() {
             cursorY += 8;
 
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(10); // Fonte pequena conforme solicitado para caber bastante informação
+            doc.setFontSize(10); 
             
-            // Quebra o texto da IA em linhas que cabem na largura da página
-            const linhasTexto = doc.splitTextToSize(reportData.resumo, maxWidth);
             
-            // Loop inteligente que cria novas páginas se o texto for muito longo
-            for (let i = 0; i < linhasTexto.length; i++) {
-                if (cursorY > pageHeight - margin) {
-                    doc.addPage();
-                    cursorY = margin; // Reseta o cursor pro topo da nova página
-                }
-                doc.text(linhasTexto[i], margin, cursorY);
-                cursorY += 5; // Espaçamento entre linhas do texto principal
-            }
+            cursorY = addWrappedMarkdownText(doc, resumoRelatorio, margin, cursorY, maxWidth, pageHeight, margin, 5);
             cursorY += 10;
 
-            // --- IMAGEM DO MAPA ---
+         
             if (geoJsonData && mapRef.current) {
-                // Se a página atual não tiver espaço suficiente para o mapa (que ocupará uns 80mm de altura), cria nova aba
+                
                 if (cursorY + 90 > pageHeight - margin) {
                     doc.addPage();
                     cursorY = margin;
@@ -154,14 +260,14 @@ export default function Report() {
                 doc.text("Mapeamento Geoespacial", margin, cursorY);
                 cursorY += 8;
 
-                // Tira a foto APENAS da div do Leaflet
+                
                 const canvas = await html2canvas(mapRef.current, { 
                     useCORS: true, 
                     scale: 2 
                 });
                 const imgData = canvas.toDataURL("image/png");
                 
-                // Calcula a proporção para caber perfeito no PDF
+                
                 const imgWidth = maxWidth;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
@@ -182,10 +288,10 @@ export default function Report() {
                 cursorY += 8;
 
                 doc.setFont("helvetica", "normal");
-                doc.setFontSize(9); // Bem pequena para as fontes
+                doc.setFontSize(9); 
                 
                 reportData.fontes.forEach(fonte => {
-                    // Verifica paginação para cada fonte listada
+                    
                     if (cursorY > pageHeight - margin) {
                         doc.addPage();
                         cursorY = margin;
@@ -196,19 +302,19 @@ export default function Report() {
                     
                     const linhasFonte = doc.splitTextToSize(textoFonte, maxWidth);
                     doc.text(linhasFonte, margin, cursorY);
-                    cursorY += (linhasFonte.length * 4); // Incremento base
+                    cursorY += (linhasFonte.length * 4); 
 
                     if (fonte.url) {
-                        doc.setTextColor(37, 99, 235); // Cor azul de link
+                        doc.setTextColor(37, 99, 235); 
                         doc.textWithLink("Acessar base de dados", margin + 5, cursorY, { url: fonte.url });
-                        doc.setTextColor(0, 0, 0); // Volta pra preto
+                        doc.setTextColor(0, 0, 0); 
                         cursorY += 5;
                     }
-                    cursorY += 3; // Espaço entre as fontes
+                    cursorY += 3; 
                 });
             }
 
-            // Rodapé
+           
             doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
             doc.text("Gerado automaticamente por Atlas NLP.", pageWidth / 2, pageHeight - 10, { align: "center" });
@@ -254,7 +360,7 @@ export default function Report() {
                     title="Atualizar dados"
                     disabled={isLoading || !selectedChatId}
                 >
-                    <RefreshIcon />
+                    
                 </button>
             </header>
 
@@ -289,7 +395,9 @@ export default function Report() {
                                 Síntese das Conclusões
                             </h3>
                             <div style={{ fontSize: "14px", lineHeight: "1.6", color: "#334155", whiteSpace: "pre-wrap", textAlign: "justify" }}>
-                                {reportData.resumo}
+                                <ReactMarkdown>
+                                    {normalizeReportMarkdown(reportData.resumo)}
+                                </ReactMarkdown>
                             </div>
                         </div>
 
@@ -298,7 +406,7 @@ export default function Report() {
                                 <h3 style={{ color: "#1e293b", fontSize: "16px", marginBottom: "10px", borderLeft: "4px solid #10b981", paddingLeft: "8px" }}>
                                     Mapeamento Geoespacial
                                 </h3>
-                                {/* REFERÊNCIA AQUI. Esta é a única coisa que o html2canvas vai fotografar */}
+                                {}
                                 <div className={styles.mapWrapper} ref={mapRef}>
                                     <MapComponent 
                                         poluicaoLocalizacoes={[]}
@@ -336,7 +444,7 @@ export default function Report() {
                     onClick={handleGenerateReport}
                     disabled={isGenerating || isLoading || !reportData?.resumo}
                 >
-                    {isGenerating ? "Processando Múltiplas Páginas..." : "Fazer Download do PDF (A4)"}
+                    {isGenerating ? "Processando Múltiplas Páginas..." : "Baixar como PDF"}
                 </button>
             </main>
         </div>
