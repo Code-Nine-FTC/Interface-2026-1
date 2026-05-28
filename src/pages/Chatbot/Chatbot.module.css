@@ -60,9 +60,11 @@
 }
 
 .chatInputContainer {
+  --sidebar-width: clamp(260px, 22vw, 340px);
+  --content-padding: clamp(0px, 2vw, 20px);
   position: fixed;
   bottom: 0;
-  left: 58%;
+  left: calc(50vw + (var(--sidebar-width) / 2));
   transform: translateX(-50%);
   width: 100%;
   max-width: 850px;
@@ -74,8 +76,8 @@
 }
 
 .chatInputContainer.withMap {
-  left: calc(40%);
-  max-width: 40%;
+  left: calc(25vw + (var(--sidebar-width) * 0.75));
+  max-width: min(590px, calc(50vw - (var(--sidebar-width) / 2) - var(--content-padding) - 10px));
 }
 
 .chatInputContainer.welcomeInput {
@@ -90,11 +92,29 @@
 }
 
 .mapContainer {
-  position: sticky;
+  position: fixed;
   top: 80px;
+  --sidebar-width: clamp(260px, 22vw, 340px);
+  --content-padding: clamp(0px, 2vw, 20px);
+  left: calc(50vw + (var(--sidebar-width) / 2) + 10px);
+  width: min(590px, calc(50vw - (var(--sidebar-width) / 2) - var(--content-padding) - 10px));
   height: calc(100vh - 120px);
   border-radius: 12px;
   overflow: hidden;
+  z-index: 90;
+}
+
+@media (max-width: 1200px) and (min-width: 1025px) {
+  .mapContainer {
+    --sidebar-width: clamp(230px, 28vw, 300px);
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 901px) {
+  .chatInputContainer,
+  .welcomeArea {
+    --sidebar-width: clamp(230px, 28vw, 300px);
+  }
 }
 
 .chatInputWrapper {
@@ -144,8 +164,9 @@
 }
 
 .welcomeArea {
+  --sidebar-width: clamp(260px, 22vw, 340px);
   position: fixed; 
-  left: 58%; 
+  left: calc(50vw + (var(--sidebar-width) / 2)); 
   transform: translateX(-50%);
   bottom: 70%; 
   width: 100%;
@@ -279,6 +300,12 @@ html {
 }
 
 @media (max-width: 1024px) {
+  .mapContainer {
+    position: static;
+    width: 100%;
+    height: 420px;
+  }
+
   .chatInputContainer.withMap {
     left: 50%;
     transform: translateX(-50%);
@@ -287,6 +314,19 @@ html {
 
   .messagesArea {
     max-height: 400px;
+  }
+}
+
+@media (max-width: 900px) {
+  .chatInputContainer {
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 90%;
+  }
+
+  .welcomeArea {
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 
