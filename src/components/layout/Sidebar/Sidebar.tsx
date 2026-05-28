@@ -27,12 +27,11 @@ export default function Sidebar() {
         buscarChats()
             .then((data: ChatListItem[]) => {
                 const ordenados = [...data].sort((a, b) => {
-                    // Resolve o erro ts(2362) usando .getTime()
-                    // Resolve o erro ts(2339) garantindo que o campo existe
+                    
                     const dataA = new Date(a.created_at).getTime();
                     const dataB = new Date(b.created_at).getTime();
                     
-                    return dataB - dataA; // Ordem decrescente
+                    return dataB - dataA; 
                 });
                 setChats(ordenados);
             })
@@ -66,7 +65,6 @@ export default function Sidebar() {
         { to: "/", label: "Chatbot", icon: <ChatbotIcon />, disabled: false },
         { to: "/dashboard", label: "Dashboard", icon: <DashboardIcon />, disabled: false },
         { to: "/relatorio", label: "Relatório", icon: <ReportIcon />, disabled: false },
-        { to: "/filtros", label: "Filtros", icon: <FilterIcon />, disabled: false },
     ];
 
     return (
@@ -171,16 +169,6 @@ const DashboardIcon = () => (
         <path d="M12.25 19.6122C12.25 19.3806 12.3419 19.1585 12.5055 18.9945L16.0055 15.4945C16.0868 15.413 16.1833 15.3484 16.2896 15.3042C16.3959 15.2601 16.5099 15.2374 16.625 15.2374C16.7401 15.2374 16.8541 15.2601 16.9604 15.3042C17.0667 15.3484 17.1632 15.413 17.2445 15.4945L23.0055 21.2555C23.0868 21.337 23.1833 21.4016 23.2896 21.4457C23.3959 21.4898 23.5099 21.5126 23.625 21.5126C23.7401 21.5126 23.8541 21.4898 23.9604 21.4457C24.0667 21.4016 24.1632 21.337 24.2445 21.2555L31.7555 13.7445C31.8778 13.6219 32.0337 13.5384 32.2034 13.5044C32.3732 13.4705 32.5492 13.4876 32.7092 13.5538C32.8693 13.6199 33.006 13.732 33.1023 13.876C33.1986 14.0199 33.25 14.1891 33.25 14.3622V28C33.25 28.4641 33.0656 28.9092 32.7374 29.2374C32.4092 29.5656 31.9641 29.75 31.5 29.75H14C13.5359 29.75 13.0908 29.5656 12.7626 29.2374C12.4344 28.9092 12.25 28.4641 12.25 28V19.6122Z" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
-const FilterIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21 8.75H3.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M10.5 21H31.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M15.75 33.25H26.25" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M28 8.75H38.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M33.25 14V3.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
-
 const TrashIcon = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M3 6H5H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

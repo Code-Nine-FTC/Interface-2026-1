@@ -11,7 +11,6 @@ export default function Layout() {
         "/chatbot": "Chatbot",
         "/dashboard": "Dashboard",
         "/relatorio": "Relatório",
-        "/filtros": "Filtrar dados",
     };
 
     const pageTitle = pageTitles[location.pathname] || "Página";
