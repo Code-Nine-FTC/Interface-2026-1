@@ -4,7 +4,7 @@ import logo from "../../../assets/logo.svg";
 import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { buscarChats, excluirChat, ChatListItem } from "../../../services/chatListService";
 
 const MOBILE_BREAKPOINT = 900;
@@ -25,6 +25,11 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
             ? window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches
             : false
     );
+    const [isDraggingChatsList, setIsDraggingChatsList] = useState(false);
+    const chatsListRef = useRef<HTMLDivElement | null>(null);
+    const dragStartYRef = useRef(0);
+    const dragStartScrollTopRef = useRef(0);
+    const suppressNextChatClickRef = useRef(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -111,6 +116,57 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
     };
 
     const closeMobileMenu = () => onMobileMenuOpenChange(false);
+    const handleChatsListPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+        if (!isMobileViewport || event.pointerType !== "mouse" || event.button !== 0) {
+            return;
+        }
+
+        const listElement = chatsListRef.current;
+        if (!listElement) {
+            return;
+        }
+
+        dragStartYRef.current = event.clientY;
+        dragStartScrollTopRef.current = listElement.scrollTop;
+        suppressNextChatClickRef.current = false;
+        setIsDraggingChatsList(true);
+        listElement.setPointerCapture(event.pointerId);
+        event.preventDefault();
+    };
+
+    const handleChatsListPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+        if (!isDraggingChatsList) {
+            return;
+        }
+
+        const listElement = chatsListRef.current;
+        if (!listElement) {
+            return;
+        }
+
+        const deltaY = event.clientY - dragStartYRef.current;
+        if (Math.abs(deltaY) > 4) {
+            suppressNextChatClickRef.current = true;
+        }
+
+        listElement.scrollTop = dragStartScrollTopRef.current - deltaY;
+    };
+
+    const finishChatsListDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+        if (!isDraggingChatsList) {
+            return;
+        }
+
+        const listElement = chatsListRef.current;
+        if (listElement) {
+            try {
+                listElement.releasePointerCapture(event.pointerId);
+            } catch {
+            }
+        }
+
+        setIsDraggingChatsList(false);
+    };
 
     const activeStyle = { color: theme.orange.secondary };
     const normalStyle = { color: theme.orange.main };
@@ -176,7 +232,14 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
 
                         <span className={styles.historyTitle}>Historico de chats</span>
 
-                        <div className={styles.chatsList}>
+                        <div
+                            ref={chatsListRef}
+                            className={`${styles.chatsList} ${isDraggingChatsList ? styles.chatsListDragging : ""}`}
+                            onPointerDown={handleChatsListPointerDown}
+                            onPointerMove={handleChatsListPointerMove}
+                            onPointerUp={finishChatsListDrag}
+                            onPointerCancel={finishChatsListDrag}
+                        >
                             {chats.length === 0 && (
                                 <div className={styles.chatsListEmpty}>Nenhum chat encontrado</div>
                             )}
@@ -188,6 +251,11 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
                                         currentChatId === chat.id ? styles.chatListItemActive : ""
                                     }`}
                                     onClick={() => {
+                                        if (suppressNextChatClickRef.current) {
+                                            suppressNextChatClickRef.current = false;
+                                            return;
+                                        }
+
                                         navigate(`/chatbot?chat_id=${chat.id}&view=${Date.now()}`);
                                         if (isMobileViewport) {
                                             closeMobileMenu();

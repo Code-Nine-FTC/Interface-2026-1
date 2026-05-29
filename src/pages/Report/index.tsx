@@ -145,9 +145,11 @@ export default function Report() {
     
     const [reportData, setReportData] = useState<ResumoRelatorioData | null>(null);
     const [geoJsonData, setGeoJsonData] = useState<any | null>(null);
+    const [isChatMenuOpen, setIsChatMenuOpen] = useState(false);
     
    
     const mapRef = useRef<HTMLDivElement>(null);
+    const chatDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setTitle("Gerador de Relatórios");
@@ -197,6 +199,24 @@ export default function Report() {
 
         carregarDadosRelatorio();
     }, [selectedChatId]);
+
+    useEffect(() => {
+        if (!isChatMenuOpen) return;
+
+        const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+            if (!chatDropdownRef.current?.contains(event.target as Node)) {
+                setIsChatMenuOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleOutsideClick);
+        document.addEventListener("touchstart", handleOutsideClick);
+
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+            document.removeEventListener("touchstart", handleOutsideClick);
+        };
+    }, [isChatMenuOpen]);
 
     
     const handleGenerateReport = async () => {
@@ -329,39 +349,69 @@ export default function Report() {
         }
     };
 
+    const selectedChat = chats.find(chat => chat.id === selectedChatId);
+    const isChatSelectorDisabled = isLoading || chats.length === 0;
+
     return (
         <div className={styles.container}>
-            <header className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <div style={{ flex: 1, marginRight: '1rem' }}>
-                    <label htmlFor="chatSelect" style={{ marginRight: '10px', fontWeight: 'bold' }}>Selecione o Chat:</label>
-                    <select 
-                        id="chatSelect"
-                        value={selectedChatId}
-                        onChange={(e) => setSelectedChatId(e.target.value)}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minWidth: '300px' }}
-                        disabled={isLoading || chats.length === 0}
+            <header className={styles.header}>
+                <div className={styles.chatSelector}>
+                    <label htmlFor="chatSelect" className={styles.chatLabel}>Selecione o Chat:</label>
+                    <div
+                        className={styles.chatSelectWrap}
+                        ref={chatDropdownRef}
+                        onKeyDown={(event) => {
+                            if (event.key === "Escape") {
+                                setIsChatMenuOpen(false);
+                            }
+                        }}
                     >
-                        <option value="" disabled>-- Selecione um chat --</option>
-                        {chats.map(chat => (
-                            <option key={chat.id} value={chat.id}>
-                                {chat.title} ({new Date(chat.created_at).toLocaleDateString()})
-                            </option>
-                        ))}
-                    </select>
+                        <button
+                            id="chatSelect"
+                            type="button"
+                            className={styles.chatSelect}
+                            onClick={() => setIsChatMenuOpen(open => !open)}
+                            disabled={isChatSelectorDisabled}
+                            aria-haspopup="listbox"
+                            aria-expanded={isChatMenuOpen}
+                        >
+                            <span className={styles.chatSelectText}>
+                                {selectedChat
+                                    ? `${selectedChat.title} (${new Date(selectedChat.created_at).toLocaleDateString()})`
+                                    : "-- Selecione um chat --"}
+                            </span>
+                        </button>
+
+                        {isChatMenuOpen && !isChatSelectorDisabled && (
+                            <div className={styles.chatOptions} role="listbox" aria-label="Chats disponiveis">
+                                {chats.map(chat => {
+                                    const isSelected = chat.id === selectedChatId;
+
+                                    return (
+                                        <button
+                                            key={chat.id}
+                                            type="button"
+                                            className={`${styles.chatOption} ${isSelected ? styles.chatOptionActive : ""}`}
+                                            role="option"
+                                            aria-selected={isSelected}
+                                            title={chat.title}
+                                            onClick={() => {
+                                                setSelectedChatId(chat.id);
+                                                setIsChatMenuOpen(false);
+                                            }}
+                                        >
+                                            <span className={styles.chatOptionTitle}>{chat.title}</span>
+                                            <span className={styles.chatOptionDate}>
+                                                {new Date(chat.created_at).toLocaleDateString()}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                <button 
-                    className={styles.refreshButton} 
-                    onClick={() => {
-                        const current = selectedChatId;
-                        setSelectedChatId("");
-                        setTimeout(() => setSelectedChatId(current), 5);
-                    }}
-                    title="Atualizar dados"
-                    disabled={isLoading || !selectedChatId}
-                >
-                    
-                </button>
             </header>
 
             <main className={styles.mainPanel}>
@@ -374,27 +424,27 @@ export default function Report() {
                     </div>
                 ) : !reportData || !reportData.resumo ? (
                     <div className={styles.reportDocument}>
-                        <p style={{ textAlign: "center", color: "#666" }}>
+                        <p className={styles.emptyState}>
                             Nenhum dado encontrado ou nenhum chat selecionado.
                         </p>
                     </div>
                 ) : (
-                    /* MOLDE HTML (APENAS PARA VISUALIZAÇÃO DO USUÁRIO) */
+                   
                     <div className={styles.reportDocument}>
-                        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                            <h2 style={{ color: "#1e293b", marginBottom: "5px", fontSize: "22px" }}>Relatório de Análise Ambiental</h2>
-                            <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
+                        <div className={styles.documentHeader}>
+                            <h2 className={styles.documentTitle}>Relatório de Análise Ambiental</h2>
+                            <p className={styles.documentMeta}>
                                 <strong>Tema:</strong> {chats.find(c => c.id === selectedChatId)?.title || "Análise Geoespacial"}
                             </p>
                         </div>
                         
-                        <hr style={{ border: "0", borderTop: "1px solid #e2e8f0", marginBottom: "20px" }} />
+                        <hr className={styles.documentDivider} />
 
-                        <div style={{ marginBottom: "25px" }}>
-                            <h3 style={{ color: "#1e293b", fontSize: "16px", marginBottom: "10px", borderLeft: "4px solid #3b82f6", paddingLeft: "8px" }}>
+                        <div className={styles.reportSection}>
+                            <h3 className={`${styles.sectionTitle} ${styles.sectionTitleBlue}`}>
                                 Síntese das Conclusões
                             </h3>
-                            <div style={{ fontSize: "14px", lineHeight: "1.6", color: "#334155", whiteSpace: "pre-wrap", textAlign: "justify" }}>
+                            <div className={styles.reportMarkdown}>
                                 <ReactMarkdown>
                                     {normalizeReportMarkdown(reportData.resumo)}
                                 </ReactMarkdown>
@@ -402,8 +452,8 @@ export default function Report() {
                         </div>
 
                         {geoJsonData && (
-                            <div style={{ marginBottom: "25px" }}>
-                                <h3 style={{ color: "#1e293b", fontSize: "16px", marginBottom: "10px", borderLeft: "4px solid #10b981", paddingLeft: "8px" }}>
+                            <div className={styles.reportSection}>
+                                <h3 className={`${styles.sectionTitle} ${styles.sectionTitleGreen}`}>
                                     Mapeamento Geoespacial
                                 </h3>
                                 {}
@@ -420,15 +470,15 @@ export default function Report() {
                         )}
 
                         {reportData.fontes && reportData.fontes.length > 0 && (
-                            <div style={{ marginTop: "20px" }}>
-                                <h3 style={{ color: "#1e293b", fontSize: "14px", marginBottom: "8px" }}>📚 Fontes oficiais consultadas:</h3>
-                                <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "13px", color: "#475569" }}>
+                            <div className={styles.sourcesSection}>
+                                <h3 className={styles.sourcesTitle}>📚 Fontes oficiais consultadas:</h3>
+                                <ul className={styles.sourcesList}>
                                     {reportData.fontes.map((fonte, index) => (
-                                        <li key={index} style={{ marginBottom: "5px" }}>
+                                        <li key={index}>
                                             <strong>{fonte.nome}</strong> {fonte.orgao ? `(${fonte.orgao})` : ""}
                                             {fonte.url && (
-                                                <span style={{ marginLeft: "5px" }}>
-                                                    - <a href={fonte.url} target="_blank" rel="noreferrer" style={{ color: "#2563eb", textDecoration: "none" }}>Acessar base de dados</a>
+                                                <span className={styles.sourceLinkWrap}>
+                                                    - <a href={fonte.url} target="_blank" rel="noreferrer">Acessar base de dados</a>
                                                 </span>
                                             )}
                                         </li>
