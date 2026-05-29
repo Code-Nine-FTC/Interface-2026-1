@@ -2,107 +2,325 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    padding: clamp(0.75rem, 2vw, 1.5rem) clamp(0.5rem, 2vw, 1.25rem) clamp(2rem, 5vw, 4rem);
+    gap: clamp(1rem, 2vw, 1.75rem);
     color: var(--text-primary);
     font-family: var(--font-family);
     box-sizing: border-box;
 }
 
-
 .header {
     display: flex;
-    justify-content: flex-end; 
-    padding-bottom: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-top: clamp(0.25rem, 1.5vw, 1rem);
 }
 
-.refreshButton {
-    background: transparent;
-    border: none; 
-    padding: 0.5rem;
-    cursor: pointer;
-    color: var(--orange-main);
+.chatSelector {
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    flex: 1 1 420px;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    min-width: 0;
 }
 
-.refreshButton:hover {
-    opacity: 0.8;
-    transform: scale(1.05); 
+.chatLabel {
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    white-space: nowrap;
 }
 
+.chatSelect {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.5rem 2rem 0.5rem 0.85rem;
+    border: 1px solid var(--orange-main);
+    border-radius: 999px;
+    background-color: var(--background-primary);
+    color: var(--orange-main);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    line-height: 1.3;
+    outline: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.chatSelectWrap {
+    position: relative;
+    width: min(100%, 440px);
+    min-width: min(300px, 100%);
+    max-width: 100%;
+    z-index: 20;
+}
+
+.chatSelectWrap::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 1px solid var(--orange-main);
+    border-bottom: 1px solid var(--orange-main);
+    transform: translateY(-60%) rotate(45deg);
+    pointer-events: none;
+}
+
+.chatSelectText {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chatOptions {
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+    max-height: min(18rem, calc(100dvh - 10rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--orange-main) 35%, var(--shared-hr, #e5e7eb));
+    border-radius: 14px;
+    background: var(--background-primary);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+}
+
+.chatOption {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    width: 100%;
+    gap: 0.75rem;
+    padding: 0.55rem 0.65rem;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 1.3;
+    cursor: pointer;
+    text-align: left;
+}
+
+.chatOption:hover,
+.chatOptionActive {
+    background: color-mix(in srgb, var(--orange-main) 12%, transparent);
+    color: var(--orange-main);
+}
+
+.chatOptionTitle {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chatOptionDate {
+    flex: 0 0 auto;
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.chatSelect:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 
 .mainPanel {
     display: flex;
+    flex: 1;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    flex: 1; 
-    gap: 2rem;
+    justify-content: flex-start;
+    gap: clamp(1.25rem, 3vw, 2rem);
+    padding-bottom: clamp(1rem, 4vw, 2.5rem);
 }
 
 .reportDocument {
-    background-color: #ffffff;
-    width: 100%;
-    max-width: 800px; /* Largura mais realista para documento */
-    min-height: 1122px; /* Proporção A4 (aprox 210x297mm) */
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid var(--shared-hr, #e5e7eb);
-    padding: 3rem; /* Margens generosas como um papel */
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: clamp(0.75rem, 2vw, 1rem);
+    width: min(100%, 794px);
+    min-height: 1123px;
+    aspect-ratio: 210 / 297;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    border: 1px solid var(--shared-hr, #e5e7eb);
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     color: #1e293b;
     box-sizing: border-box;
+    overflow-wrap: anywhere;
 }
 
-/* Esconda o mapa do canvas, pois vamos tratá-lo separadamente */
+.documentHeader {
+    margin-bottom: 0.4rem;
+    text-align: center;
+}
+
+.documentTitle {
+    margin: 0 0 0.35rem;
+    color: #1e293b;
+    font-size: clamp(1.25rem, 2.4vw, 1.375rem);
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.documentMeta {
+    margin: 0;
+    color: #64748b;
+    font-size: clamp(0.78rem, 1.6vw, 0.875rem);
+    line-height: 1.45;
+}
+
+.documentDivider {
+    width: 100%;
+    margin: 0 0 clamp(0.6rem, 2vw, 1rem);
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.reportSection {
+    margin-bottom: clamp(1rem, 3vw, 1.55rem);
+}
+
+.sectionTitle {
+    margin: 0 0 0.65rem;
+    padding-left: 0.6rem;
+    border-left: 4px solid var(--orange-main);
+    color: #1e293b;
+    font-size: clamp(0.94rem, 1.8vw, 1rem);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.sectionTitleBlue {
+    border-left-color: #3b82f6;
+}
+
+.sectionTitleGreen {
+    border-left-color: #10b981;
+}
+
+.reportMarkdown {
+    color: #334155;
+    font-size: clamp(0.82rem, 1.6vw, 0.875rem);
+    line-height: 1.65;
+    text-align: justify;
+    white-space: pre-wrap;
+}
+
+.reportMarkdown :global(p) {
+    margin: 0 0 0.85rem;
+}
+
+.reportMarkdown :global(p:last-child) {
+    margin-bottom: 0;
+}
+
 .mapWrapper {
-    width: 100%; 
-    height: 350px; 
-    border-radius: 8px; 
-    overflow: hidden; 
+    width: 100%;
+    height: clamp(240px, 38vw, 350px);
+    margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
     border: 1px solid #cbd5e1;
-    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
+.mapWrapper > div {
+    height: 100%;
+    min-height: 0;
+}
+
+.emptyState {
+    margin: auto;
+    color: #666666;
+    text-align: center;
+}
+
+.sourcesSection {
+    margin-top: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.sourcesTitle {
+    margin: 0 0 0.5rem;
+    color: #1e293b;
+    font-size: clamp(0.82rem, 1.6vw, 0.875rem);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.sourcesList {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: #475569;
+    font-size: clamp(0.76rem, 1.5vw, 0.8125rem);
+    line-height: 1.5;
+}
+
+.sourcesList li {
+    margin-bottom: 0.35rem;
+}
+
+.sourceLinkWrap {
+    margin-left: 0.3rem;
+}
+
+.sourceLinkWrap a {
+    color: #2563eb;
+    text-decoration: none;
+}
 
 .skeletonTitle {
-    height: 10px; 
-    background-color: var(--shared-hr, #e5e7eb);
+    height: 10px;
     border-radius: 4px;
+    background-color: var(--shared-hr, #e5e7eb);
     opacity: 0.7;
 }
 
 .skeletonLine {
-    height: 10px; 
-    background-color: var(--shared-hr, #e5e7eb);
+    height: 10px;
     border-radius: 4px;
+    background-color: var(--shared-hr, #e5e7eb);
     opacity: 0.5;
 }
 
 .skeletonBox {
     width: 100%;
-    height: 120px; 
-    background-color: var(--shared-hr, #e5e7eb);
-    border-radius: 8px;
-    opacity: 0.4;
+    height: 120px;
     margin: 1rem 0;
+    border-radius: 8px;
+    background-color: var(--shared-hr, #e5e7eb);
+    opacity: 0.4;
 }
 
-
 .generateButton {
-    background-color: var(--orange-main, #f97316);
-    color: #ffffff;
+    padding: 0.8rem 2.5rem;
     border: none;
     border-radius: 9999px;
-    padding: 0.8rem 2.5rem;
-    font-size: var(--font-size-sm); 
-    font-weight: 00;
+    background-color: var(--orange-main, #f97316);
+    color: #ffffff;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
     cursor: pointer;
     transition: opacity 0.2s ease, transform 0.1s ease;
 }
@@ -113,6 +331,99 @@
 }
 
 .generateButton:disabled {
-    opacity: 0.6;
     cursor: not-allowed;
+    opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0.65rem 0.25rem 2rem;
+        gap: 1rem;
+    }
+
+    .header {
+        align-items: stretch;
+        gap: 0.75rem;
+        padding-top: 0.4rem;
+    }
+
+    .chatSelector {
+        flex-basis: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+    }
+
+    .chatLabel {
+        white-space: normal;
+    }
+
+    .chatSelect {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .chatSelectWrap {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .chatOptions {
+        max-width: 100%;
+        max-height: min(16rem, calc(100dvh - 8rem));
+    }
+
+    .chatOption {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.2rem;
+        padding: 0.65rem 0.7rem;
+    }
+
+    .chatOptionTitle,
+    .chatOptionDate {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .reportDocument {
+        width: 100%;
+        min-height: auto;
+        padding: clamp(0.95rem, 4.5vw, 1.4rem);
+        box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .reportMarkdown {
+        text-align: left;
+    }
+
+    .mapWrapper {
+        height: clamp(190px, 55vw, 260px);
+    }
+
+    .generateButton {
+        width: min(100%, 280px);
+        margin-bottom: 0.75rem;
+        padding-inline: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .reportDocument {
+        padding: 0.85rem;
+        border-radius: 6px;
+    }
+
+    .documentDivider {
+        margin-bottom: 0.6rem;
+    }
+
+    .sourcesList {
+        padding-left: 1rem;
+    }
+
+    .sourceLinkWrap {
+        display: block;
+        margin-top: 0.2rem;
+        margin-left: 0;
+    }
 }

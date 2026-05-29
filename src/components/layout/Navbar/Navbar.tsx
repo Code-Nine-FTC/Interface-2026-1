@@ -8,9 +8,16 @@ import { useTitle } from "../../../context/TitleContext";
 type NavbarProps = {
     pageTitle?: string;
     onLoginClick?: () => void;
+    onMenuClick?: () => void;
+    isMobileMenuOpen?: boolean;
 };
 
-export default function Navbar({ pageTitle, onLoginClick }: NavbarProps) {
+export default function Navbar({
+    pageTitle,
+    onLoginClick,
+    onMenuClick,
+    isMobileMenuOpen = false,
+}: NavbarProps) {
     const { theme, toggleTheme, mode } = useTheme();
     const { isLoading } = useLoading();
 
@@ -88,16 +95,30 @@ export default function Navbar({ pageTitle, onLoginClick }: NavbarProps) {
             }}
         >
             <div className={styles.navbar}>
-                <Skeleton isLoading={isLoading} variant="rectangular">
-                    <h1
-                        style={{
-                            color: theme.orange?.main || "orange",
-                            fontSize: theme.font?.size?.lg,
-                        }}
+                <div className={styles.titleArea}>
+                    <button
+                        type="button"
+                        className={styles.menuButton}
+                        onClick={onMenuClick}
+                        aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+                        aria-expanded={isMobileMenuOpen}
+                        aria-controls="app-sidebar"
                     >
-                        {title || pageTitle || "Chatbot"}
-                    </h1>
-                </Skeleton>
+                        <HamburgerIcon isOpen={isMobileMenuOpen} />
+                    </button>
+
+                    <Skeleton isLoading={isLoading} variant="rectangular" fullWidth>
+                        <h1
+                            className={styles.pageTitle}
+                            style={{
+                                color: theme.orange?.main || "orange",
+                                fontSize: theme.font?.size?.lg,
+                            }}
+                        >
+                            {title || pageTitle || "Chatbot"}
+                        </h1>
+                    </Skeleton>
+                </div>
 
                 <div
                     className={styles.actions}
@@ -127,3 +148,20 @@ export default function Navbar({ pageTitle, onLoginClick }: NavbarProps) {
         </header>
     );
 }
+
+const HamburgerIcon = ({ isOpen }: { isOpen: boolean }) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        {isOpen ? (
+            <>
+                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </>
+        ) : (
+            <>
+                <path d="M4 7H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M4 12H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M4 17H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </>
+        )}
+    </svg>
+);

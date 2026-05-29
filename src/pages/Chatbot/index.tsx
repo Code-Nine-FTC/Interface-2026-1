@@ -163,7 +163,7 @@ export default function Chatbot() {
 
                         const primeira = msgs.find(m => m.tipo === "usuario");
                         if (primeira?.texto) {
-                            setTitle(primeira.texto.slice(0, 40));
+                            setTitle(primeira.texto.replace(/\s+/g, " ").trim());
                         } else {
                             setTitle("Chat");
                         }
