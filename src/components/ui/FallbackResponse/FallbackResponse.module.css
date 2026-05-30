@@ -1,0 +1,51 @@
+.fallbackCard {
+  background: #fff7ed;
+  border: 1px solid #ffd5a8;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+}
+.header {
+  margin-bottom: 8px;
+  color: #b45309;
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.userMessage {
+  font-style: italic;
+  color: #92400e;
+}
+.suggestionsLabel {
+  font-size: 12px;
+  color: #92400e;
+  margin-bottom: 6px;
+}
+.suggestions {
+  display: block;
+}
+.suggestionButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.suggestionBtn {
+  background: #fff;
+  border: 1px solid #ffd5a8;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.retryBtn {
+  background: #b45309;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.actions {
+  margin-top: 6px;
+}

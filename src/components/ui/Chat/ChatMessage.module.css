@@ -275,3 +275,7 @@
     padding: 10px 12px;
   }
 }
+
+.fallbackWrapper {
+  margin-top: 8px;
+}
