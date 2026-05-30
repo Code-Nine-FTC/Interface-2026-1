@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
+import { login, salvarToken } from "../../services/authService";
 import logo from "../../assets/logo.svg";
 import styles from "./Login.module.css";
 
@@ -10,10 +11,12 @@ type LoginProps = {
     onClose?: () => void;
 };
 
-function LoginContent({ onSubmit, onClose, showCloseButton = false }: {
+function LoginContent({ onSubmit, onClose, showCloseButton = false, erro, loading }: {
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onClose?: () => void;
     showCloseButton?: boolean;
+    erro?: string;
+    loading?: boolean;
 }) {
     const { theme, toggleTheme, mode } = useTheme();
     const [email, setEmail] = useState("");
@@ -82,6 +85,7 @@ function LoginContent({ onSubmit, onClose, showCloseButton = false }: {
                         <span>E-mail</span>
                         <input
                             type="email"
+                            name="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
                             placeholder="seu.email@exemplo.com"
@@ -94,6 +98,7 @@ function LoginContent({ onSubmit, onClose, showCloseButton = false }: {
                         <span>Senha</span>
                         <input
                             type="password"
+                            name="password"
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
                             placeholder="Digite sua senha"
@@ -106,8 +111,14 @@ function LoginContent({ onSubmit, onClose, showCloseButton = false }: {
                         Esqueceu a senha?
                     </button>
 
-                    <button type="submit" className={styles.submitButton}>
-                        Entrar
+                    {erro && (
+                        <p style={{ color: "red", fontSize: "0.85rem", margin: "0" }}>
+                            {erro}
+                        </p>
+                    )}
+
+                    <button type="submit" className={styles.submitButton} disabled={loading}>
+                        {loading ? "Entrando..." : "Entrar"}
                     </button>
                 </form>
             </div>
@@ -118,6 +129,8 @@ function LoginContent({ onSubmit, onClose, showCloseButton = false }: {
 export default function Login({ isModal = false, isOpen = true, onClose }: LoginProps) {
     const navigate = useNavigate();
     const { theme } = useTheme();
+    const [erro, setErro] = useState("");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!isModal) {
@@ -144,10 +157,25 @@ export default function Login({ isModal = false, isOpen = true, onClose }: Login
         };
     }, [isModal, isOpen, onClose]);
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        onClose?.();
-        navigate("/chatbot");
+        setErro("");
+        setLoading(true);
+
+        const form = event.currentTarget;
+        const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+        const senha = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+        try {
+            const { access_token } = await login(email, senha);
+            salvarToken(access_token);
+            onClose?.();
+            navigate("/chatbot");
+        } catch (err) {
+            setErro(err instanceof Error ? err.message : "Erro ao fazer login");
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (isModal && !isOpen) {
@@ -169,14 +197,14 @@ export default function Login({ isModal = false, isOpen = true, onClose }: Login
             {isModal ? (
                 <div className={styles.modalBackdrop}>
                     <section className={`${styles.shell} ${styles.modalShell}`} onClick={(event) => event.stopPropagation()}>
-                        <LoginContent onSubmit={handleSubmit} onClose={onClose} showCloseButton />
+                        <LoginContent onSubmit={handleSubmit} onClose={onClose} showCloseButton erro={erro} loading={loading} />
                     </section>
                 </div>
             ) : (
                 <>
                     <div className={styles.backgroundGlow} />
                     <section className={styles.shell}>
-                        <LoginContent onSubmit={handleSubmit} />
+                        <LoginContent onSubmit={handleSubmit} erro={erro} loading={loading} />
                     </section>
                 </>
             )}
