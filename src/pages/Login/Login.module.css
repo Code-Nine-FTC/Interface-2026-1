@@ -31,13 +31,13 @@
 .shell {
     position: relative;
     z-index: 1;
-    width: min(1240px, 100%);
-    min-height: clamp(620px, 80svh, 760px);
+    width: min(1080px, 100%);
+    min-height: clamp(500px, 72svh, 620px);
     display: grid;
-    grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.98fr);
-    border-radius: 30px;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 36px 110px rgba(26, 35, 50, 0.18);
+    box-shadow: 0 28px 80px rgba(26, 35, 50, 0.16);
     background: rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(18px);
 }
@@ -53,26 +53,26 @@
 }
 
 .modalShell {
-    width: min(1040px, 100%);
-    max-height: min(88svh, 820px);
+    width: min(920px, 100%);
+    max-height: min(86svh, 680px);
     overflow: hidden;
-    border-radius: 28px;
+    border-radius: 24px;
     box-shadow: 0 32px 100px rgba(18, 24, 35, 0.3);
 }
 
 .brandPanel {
     color: #ffffff;
-    padding: clamp(20px, 4vw, 48px);
+    padding: clamp(18px, 3vw, 36px);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: clamp(16px, 2.5vw, 28px);
+    gap: clamp(12px, 2vw, 22px);
 }
 
 .brandBadge {
-    width: min(100%, 160px);
-    padding: 10px 12px;
-    border-radius: 18px;
+    width: min(100%, 132px);
+    padding: 8px 10px;
+    border-radius: 14px;
     background: rgba(255, 255, 255, 0.94);
     display: grid;
     place-items: center;
@@ -89,8 +89,8 @@
 .brandCopy {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-width: 460px;
+    gap: 8px;
+    max-width: 420px;
 }
 
 .kicker,
@@ -98,11 +98,11 @@
     display: inline-flex;
     align-items: center;
     width: fit-content;
-    padding: 0.45rem 0.75rem;
+    padding: 0.36rem 0.65rem;
     border-radius: 999px;
-    font-size: 0.74rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     text-transform: uppercase;
 }
 
@@ -113,34 +113,34 @@
 
 .brandCopy h1 {
     margin: 0;
-    font-size: clamp(1.75rem, 3vw, 2.7rem);
-    line-height: 1;
-    letter-spacing: -0.04em;
-    max-width: 13ch;
+    font-size: 2.05rem;
+    line-height: 1.08;
+    letter-spacing: 0;
+    max-width: 15ch;
 }
 
 .brandCopy p {
     margin: 0;
     max-width: 38ch;
-    font-size: 0.92rem;
-    line-height: 1.5;
+    font-size: 0.84rem;
+    line-height: 1.45;
     color: rgba(255, 255, 255, 0.88);
 }
 
 .featureList {
     display: grid;
-    gap: 10px;
-    max-width: 320px;
+    gap: 8px;
+    max-width: 300px;
 }
 
 .featureItem {
     width: fit-content;
     max-width: 100%;
-    padding: 0.7rem 0.9rem;
-    border-radius: 12px;
+    padding: 0.55rem 0.75rem;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.14);
     border: 1px solid rgba(255, 255, 255, 0.14);
-    font-size: 0.84rem;
+    font-size: 0.78rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.96);
 }
@@ -148,11 +148,12 @@
 .formPanel {
     position: relative;
     background: var(--background-primary);
-    padding: clamp(20px, 4vw, 48px);
+    padding: clamp(22px, 3vw, 38px);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 22px;
+    justify-content: flex-start;
+    gap: 16px;
+    overflow-y: auto;
 }
 
 .closeButton {
@@ -189,23 +190,10 @@
     display: inline-block;
 }
 
-.themeToggle {
-    align-self: flex-end;
-    border: 1px solid color-mix(in srgb, var(--orange-main) 24%, transparent);
-    background: color-mix(in srgb, var(--orange-main) 8%, white);
-    color: var(--orange-secondary);
-    padding: 0.7rem 1rem;
-    border-radius: 999px;
-    font-family: var(--font-family);
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
 .formHeader {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 7px;
 }
 
 .formEyebrow {
@@ -215,7 +203,7 @@
 
 .formHeader h2 {
     margin: 0;
-    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+    font-size: 1.85rem;
     color: var(--text-primary);
     line-height: 1.05;
 }
@@ -224,35 +212,35 @@
     margin: 0;
     max-width: 34ch;
     color: var(--text-secondary);
-    font-size: 0.92rem;
-    line-height: 1.55;
+    font-size: 0.84rem;
+    line-height: 1.45;
 }
 
 .form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    width: min(100%, 420px);
+    gap: 12px;
+    width: min(100%, 360px);
 }
 
 .field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .field span {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .field input {
     width: 100%;
-    border: 1px solid rgba(108, 117, 132, 0.16);
+    border: 1px solid var(--orange-main);
     background: var(--background-secondary);
-    border-radius: 12px;
-    padding: 0.85rem 0.95rem;
+    border-radius: 10px;
+    padding: 0.68rem 0.82rem;
     font: inherit;
     color: var(--text-primary);
     outline: none;
@@ -263,8 +251,8 @@
 }
 
 .field input:focus {
-    border-color: color-mix(in srgb, var(--orange-main) 60%, white);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--orange-main) 15%, transparent);
+    border-color: var(--orange-main);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange-main) 15%, transparent);
 }
 
 .linkButton {
@@ -272,7 +260,7 @@
     background: transparent;
     color: var(--orange-secondary);
     font: inherit;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     padding: 0;
@@ -281,15 +269,15 @@
 
 .submitButton {
     border: none;
-    border-radius: 12px;
-    padding: 0.95rem 1.1rem;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
     background: linear-gradient(135deg, var(--orange-main), var(--orange-secondary));
     color: #ffffff;
     font: inherit;
-    font-size: 0.94rem;
+    font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 16px 30px rgba(255, 138, 36, 0.22);
+    box-shadow: 0 12px 22px rgba(255, 138, 36, 0.2);
 }
 
 .submitButton:hover {
@@ -310,19 +298,19 @@
     }
 
     .shell {
-        grid-template-columns: 1fr;
-        min-height: auto;
-        max-width: 760px;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+        min-height: clamp(480px, 72svh, 600px);
+        max-width: 960px;
         border-radius: 24px;
     }
 
     .brandPanel,
     .formPanel {
-        padding: 24px;
+        padding: 22px;
     }
 
     .brandBadge {
-        width: min(100%, 180px);
+        width: min(100%, 140px);
     }
 
     .brandCopy h1 {
@@ -330,7 +318,7 @@
     }
 
     .form {
-        width: 100%;
+        width: min(100%, 340px);
     }
 }
 
@@ -373,16 +361,16 @@
         min-height: 0;
         margin: 0;
         flex: 1 1 auto;
-        padding: 22px 20px 26px;
-        gap: 16px;
+        padding: 18px 18px 22px;
+        gap: 12px;
         background:
             radial-gradient(circle at 18% 0%, rgba(255, 138, 36, 0.12), transparent 20%),
             radial-gradient(circle at 100% 20%, rgba(207, 105, 15, 0.1), transparent 18%),
             linear-gradient(180deg, rgba(255, 255, 255, 0.92), #fff9f2 58%, var(--background-primary) 100%);
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
         position: relative;
-        overflow: hidden;
+        overflow-y: auto;
         border-radius: 24px 24px 0 0;
         box-shadow: 0 -18px 40px rgba(26, 35, 50, 0.08);
         border-top: 1px solid rgba(255, 138, 36, 0.16);
@@ -407,11 +395,11 @@
         gap: 12px;
         position: relative;
         z-index: 1;
-        padding-bottom: 6px;
+        padding-bottom: 2px;
     }
 
     .mobileLogo {
-        width: min(84px, 22vw);
+        width: min(66px, 20vw);
         height: auto;
         display: block;
         filter: drop-shadow(0 10px 18px rgba(255, 138, 36, 0.18));
@@ -425,57 +413,53 @@
         color: var(--orange-secondary);
     }
 
-    .themeToggle {
-        display: none;
-    }
-
     .submitButton {
         width: 100%;
     }
 
     .formHeader {
-        gap: 6px;
+        gap: 5px;
         align-items: center;
         text-align: center;
     }
 
     .formHeader h2 {
-        font-size: 1.55rem;
+        font-size: 1.35rem;
     }
 
     .formHeader p {
-        font-size: 0.94rem;
+        font-size: 0.84rem;
         max-width: 100%;
     }
 
     .form {
-        gap: 14px;
-        width: min(100%, 460px);
+        gap: 10px;
+        width: min(100%, 380px);
     }
 
     .field {
-        gap: 8px;
+        gap: 6px;
         width: 100%;
     }
 
     .field span {
-        font-size: 0.9rem;
+        font-size: 0.82rem;
     }
 
     .field input {
-        padding: 1rem 1.05rem;
-        border-radius: 14px;
+        padding: 0.72rem 0.82rem;
+        border-radius: 10px;
     }
 
     .linkButton {
-        font-size: 0.9rem;
+        font-size: 0.82rem;
         align-self: center;
     }
 
     .submitButton {
-        padding: 1rem 1.1rem;
-        font-size: 1rem;
-        border-radius: 14px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
     }
 
     .helperText {
@@ -493,8 +477,8 @@
     .formPanel {
         max-width: 100%;
         min-height: 0;
-        padding: 18px 14px 20px;
-        gap: 12px;
+        padding: 14px 14px 18px;
+        gap: 10px;
         border-radius: 24px 24px 0 0;
         align-items: center;
         border-top: 1px solid rgba(255, 138, 36, 0.18);
@@ -508,7 +492,7 @@
     }
 
     .mobileLogo {
-        width: min(72px, 24vw);
+        width: min(58px, 22vw);
     }
 
     .mobileBrandText {
@@ -516,18 +500,18 @@
     }
 
     .formHeader h2 {
-        font-size: 1.35rem;
+        font-size: 1.25rem;
     }
 
     .formHeader p {
-        font-size: 0.92rem;
+        font-size: 0.8rem;
     }
 
     .field input {
-        padding: 0.92rem 1rem;
+        padding: 0.68rem 0.78rem;
     }
 
     .submitButton {
-        padding: 0.92rem 1rem;
+        padding: 0.7rem 0.9rem;
     }
 }
