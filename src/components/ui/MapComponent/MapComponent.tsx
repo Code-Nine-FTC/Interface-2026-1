@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import styles from './MapComponent.module.css';
+import { resolveFeatureNome } from '../../../utils/geoFeatureLabels';
 import type { Mapa } from '../../../services/chatService';
 
 interface PoluicaoLocalizacao {
@@ -168,7 +169,7 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
 
   switch (tipo) {
     case 'imovel_rural_queimada': {
-      titulo = String(properties.nome_imovel ?? 'Imóvel rural');
+      titulo = resolveFeatureNome(properties);
       if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
       if (properties.codigo_car) linhas.push(linhaPopup('CAR', properties.codigo_car));
       if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${formatNum(properties.area_ha, 4)} ha`));
@@ -189,7 +190,7 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
     }
     case 'imovel_rural_desmatamento':
     case 'imovel_rural_quilombo': {
-      titulo = String(properties.nome_imovel ?? 'Imóvel rural');
+      titulo = resolveFeatureNome(properties);
       if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
       if (properties.codigo_car) linhas.push(linhaPopup('CAR', properties.codigo_car));
       if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${formatNum(properties.area_ha, 4)} ha`));
@@ -210,7 +211,7 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
       break;
     }
     default: {
-      titulo = String(properties.nome ?? properties.municipio ?? 'Sem nome');
+      titulo = resolveFeatureNome(properties);
       linhas.push(linhaPopup('Tipo', tipo));
       if (typeof properties.intensidade === 'number') linhas.push(linhaPopup('Intensidade', formatNum(properties.intensidade)));
       if (properties.fase) linhas.push(linhaPopup('Fase', properties.fase));
