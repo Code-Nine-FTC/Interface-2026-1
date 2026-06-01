@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { useTheme } from "../../context/ThemeContext";
 import MapComponent from "../../components/ui/MapComponent/MapComponent";
 import ChatInput from "../../components/ui/ChatInput/ChatInput";
 import ChatMessage, { Mensagem } from "../../components/ui/Chat/ChatMessage";
 import RecommendedQuestions from "../../components/ui/RecommendedQuestions/RecommendedQuestions";
 import styles from "./Chatbot.module.css";
-import logoAtlas from "../../assets/logo.svg";
 import { enviarMensagemComFallback, feedbackChat, ChatMensagemResponseWithFallback, Mapa } from "../../services/chatService";
 import { useLocation, useNavigate } from "react-router-dom";
 import { buscarHistoricoChat } from "../../services/chatHistoricoService";
@@ -65,7 +63,6 @@ function coordenadaDoFeature(feature: Mapa["features"][number]): CoordenadaMapa 
 }
 
 export default function Chatbot() {
-    const { theme } = useTheme();
     const [mensagens, setMensagens] = useState<Mensagem[]>([]);
     const [input, setInput] = useState("");
     const [mostrarMapa, setMostrarMapa] = useState(false);
@@ -79,6 +76,7 @@ export default function Chatbot() {
     const [createdAt, setCreatedAt] = useState<string | null>(null);
     const [mapRenderKey, setMapRenderKey] = useState<number>(Date.now());
     const chatRef = useRef<HTMLDivElement>(null);
+    const welcomeExitTimeoutRef = useRef<number | null>(null);
     const location = useLocation();
     const navigate = useNavigate();
     const { setTitle } = useTitle();
@@ -185,21 +183,36 @@ export default function Chatbot() {
                         setMensagens([]);
                     }
                     setChatIniciado(true);
+                    setExitandoWelcome(false);
                 })
                 .catch(() => {
                     setMensagens([]);
                     setChatIniciado(true);
+                    setExitandoWelcome(false);
                 });
         } else {
+            if (welcomeExitTimeoutRef.current !== null) {
+                window.clearTimeout(welcomeExitTimeoutRef.current);
+                welcomeExitTimeoutRef.current = null;
+            }
             setChatId(null);
             setMensagens([]);
             setMostrarMapa(false);
             setDadosMapa(null);
             setChatIniciado(false);
+            setExitandoWelcome(false);
             setCreatedAt(null);
             setTitle("Novo chat");
         }
     }, [location.search]);
+
+    useEffect(() => {
+        return () => {
+            if (welcomeExitTimeoutRef.current !== null) {
+                window.clearTimeout(welcomeExitTimeoutRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (chatRef.current) {
@@ -216,9 +229,14 @@ export default function Chatbot() {
         const isNovoChat = !chatId;
 
         if (!chatIniciado) {
+            if (welcomeExitTimeoutRef.current !== null) {
+                window.clearTimeout(welcomeExitTimeoutRef.current);
+            }
             setExitandoWelcome(true);
-            setTimeout(() => {
+            welcomeExitTimeoutRef.current = window.setTimeout(() => {
                 setChatIniciado(true);
+                setExitandoWelcome(false);
+                welcomeExitTimeoutRef.current = null;
             }, 500);
         }
 
@@ -367,7 +385,7 @@ export default function Chatbot() {
                         ${mostrarMapa && dadosMapa ? styles.withMap : ""} 
                     `}>
                         
-                        {(!chatIniciado || exitandoWelcome) && (
+                        {!chatIniciado && (
                             <div className={`${styles.suggestionsWrapper} ${exitandoWelcome ? styles.fadeOut : ""}`}>
                                 <RecommendedQuestions onSelect={(pergunta) => handleEnviarMensagem(pergunta)} />
                             </div>
