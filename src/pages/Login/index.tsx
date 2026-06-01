@@ -135,7 +135,7 @@ function LoggedInContent({
     showCloseButton?: boolean;
     userEmail?: string | null;
 }) {
-    const { theme, toggleTheme, mode } = useTheme();
+    const { theme } = useTheme();
 
     return (
         <>
@@ -174,14 +174,6 @@ function LoggedInContent({
                     <img src={logo} alt="Atlas" className={styles.mobileLogo} />
                 </div>
 
-                <button
-                    type="button"
-                    className={styles.themeToggle}
-                    onClick={toggleTheme}
-                    aria-label="Alternar tema"
-                >
-                    {mode === "light" ? "Tema escuro" : "Tema claro"}
-                </button>
 
                 <div className={styles.formHeader}>
                     <span className={styles.formEyebrow}>Sessão ativa</span>
