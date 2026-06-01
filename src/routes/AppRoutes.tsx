@@ -3,6 +3,7 @@ import Layout from "../components/layout/Layout";
 import Report from "../pages/Report";
 import Chatbot from "../pages/Chatbot";
 import Dashboard from "../pages/Dashboard";
+import FiltersPage from "../pages/Filters";
 
 export default function AppRoutes() {
     return (
