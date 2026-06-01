@@ -2,13 +2,27 @@ import { useState, useEffect } from "react";
 import styles from "./RecommendedQuestions.module.css";
 
 const PERGUNTAS_PADRAO = [
-    "Dados sobre aldeias indígenas no estado de São Paulo",
-    "Mostre queimadas na cidade de São Paulo",
-    "Mostre dados sobre imóveis do sicar",
-    "Mostre dados sobre imóveis do sicar em São Paulo",
-    "Mostre dados sobre imóveis do sicar em São Paulo com área maior que 1000m²",
-    "Mostre dados sobre imóveis do sicar em São Paulo com área maior que 1000m² e valor menor que R$500.000",
-];
+    // Queimadas e desmatamento
+    "Quantos focos de queimada foram registrados no estado de São Paulo em 2024?",
+    "Mostre alertas de desmatamento no município de São Paulo",
+  
+    // Territórios e conservação
+    "Quantas terras indígenas existem no estado de São Paulo?",
+    "Quantas unidades de conservação há em São Paulo?",
+    "Mostre territórios quilombolas no estado de São Paulo",
+  
+    // CAR / imóveis rurais
+    "Quantos imóveis rurais estão cadastrados no CAR em São Paulo?",
+    "Mostre imóveis rurais cadastrados no CAR no município de Campinas",
+  
+    // Relações (mapa + listagens)
+    "Quais imóveis rurais tiveram focos de queimada em São Paulo?",
+    "Imóveis rurais com sobreposição em terras indígenas em São Paulo",
+  
+    // Consultas por imóvel (quando o usuário tiver um CAR)
+    "Quantos focos de queimada há na propriedade com código CAR SP-3550308-ABC12345678901234567890123456789012?",
+    "Quais passivos ambientais existem no imóvel rural com código CAR SP-3550308-ABC12345678901234567890123456789012?",
+  ];
 
 interface RecommendedQuestionsProps {
     onSelect: (pergunta: string) => void;
