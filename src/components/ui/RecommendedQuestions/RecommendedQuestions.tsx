@@ -3,7 +3,7 @@ import styles from "./RecommendedQuestions.module.css";
 
 const PERGUNTAS_PADRAO = [
     // Queimadas e desmatamento
-    "Quantos focos de queimada foram registrados no estado de São Paulo em 2024?",
+    "Quantos focos de queimada no município de São Paulo?", 
     "Mostre alertas de desmatamento no município de São Paulo",
   
     // Territórios e conservação
@@ -17,11 +17,10 @@ const PERGUNTAS_PADRAO = [
   
     // Relações (mapa + listagens)
     "Quais imóveis rurais tiveram focos de queimada em São Paulo?",
-    "Imóveis rurais com sobreposição em terras indígenas em São Paulo",
   
     // Consultas por imóvel (quando o usuário tiver um CAR)
-    "Quantos focos de queimada há na propriedade com código CAR SP-3550308-ABC12345678901234567890123456789012?",
-    "Quais passivos ambientais existem no imóvel rural com código CAR SP-3550308-ABC12345678901234567890123456789012?",
+    "Quantos focos de queimada há na propriedade com código CAR SP-3500105-268208B9F3A84F508B9C79474EA557EC?",
+    "Quais passivos ambientais existem no imóvel rural com código CAR SP-3500709-F80A461130164CF9A0B0FEAB5611FA40?",
   ];
 
 interface RecommendedQuestionsProps {
