@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Navbar.module.css";
 import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
 import { useTitle } from "../../../context/TitleContext";
+import {
+    AUTH_CHANGED_EVENT,
+    AUTH_TOKEN_KEY,
+    getMe,
+    obterToken,
+    removerToken,
+    usuarioEhAdmin,
+} from "../../../services/authService";
+import { dispararAtualizacaoManual } from "../../../services/adminService";
 
 type NavbarProps = {
     pageTitle?: string;
@@ -24,11 +33,72 @@ export default function Navbar({
     const { isLoading } = useLoading();
 
     const [isSpinning, setIsSpinning] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadAdminStatus = async () => {
+            const token = obterToken();
+
+            if (!token) {
+                if (isMounted) setIsAdmin(false);
+                return;
+            }
+
+            try {
+                const usuario = await getMe(token);
+                if (isMounted) {
+                    setIsAdmin(usuarioEhAdmin(usuario, token));
+                }
+            } catch {
+                if (isMounted) setIsAdmin(false);
+                removerToken();
+            }
+        };
+
+        const handleAuthChanged = () => {
+            void loadAdminStatus();
+        };
+
+        const handleStorageChanged = (event: StorageEvent) => {
+            if (event.key === AUTH_TOKEN_KEY) {
+                void loadAdminStatus();
+            }
+        };
+
+        void loadAdminStatus();
+        window.addEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+        window.addEventListener("storage", handleStorageChanged);
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+            window.removeEventListener("storage", handleStorageChanged);
+        };
+    }, []);
 
     const handleToggleTheme = () => {
         setIsSpinning(true);
         toggleTheme();
         setTimeout(() => setIsSpinning(false), 600);
+    };
+
+    const handleManualUpdate = async () => {
+        if (isUpdating) return;
+
+        setIsUpdating(true);
+
+        try {
+            const response = await dispararAtualizacaoManual();
+            window.alert(`${response.message}\nTask ID: ${response.task_id}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao iniciar atualizacao.";
+            window.alert(message);
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     const SunLightIcon = () => (
@@ -86,6 +156,28 @@ export default function Navbar({
         </svg>
     );
 
+    const RefreshCcwDotIcon = ({ className = "" }: { className?: string }) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+            aria-hidden="true"
+        >
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 16h5v5" />
+            <circle cx="12" cy="12" r="1" />
+        </svg>
+    );
+
     const { title } = useTitle();
     
     return (
@@ -126,6 +218,22 @@ export default function Navbar({
                     className={styles.actions}
                     style={{ color: theme.orange?.main || "orange" }}
                 >
+                    {isAdmin && (
+                        <Skeleton isLoading={isLoading} variant="rectangular">
+                            <button
+                                type="button"
+                                className={styles.iconButton}
+                                onClick={handleManualUpdate}
+                                disabled={isUpdating}
+                                aria-label="Atualizar base de dados"
+                                aria-busy={isUpdating}
+                                title="Atualizar base de dados"
+                            >
+                                <RefreshCcwDotIcon className={isUpdating ? styles.spin : ""} />
+                            </button>
+                        </Skeleton>
+                    )}
+
                     <Skeleton isLoading={isLoading} variant="rectangular">
                         {mode === "light" ? <SunLightIcon /> : <SunDimIcon />}
                     </Skeleton>
