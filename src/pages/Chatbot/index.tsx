@@ -62,6 +62,32 @@ function coordenadaDoFeature(feature: Mapa["features"][number]): CoordenadaMapa 
     };
 }
 
+function mapaTemFeatures(mapa?: Mapa | null): boolean {
+    return Boolean(mapa?.features?.length);
+}
+
+/** Exibe mapa só se a última resposta do bot tiver GeoJSON e não for fallback. */
+function resolverMapaDasMensagens(msgs: Mensagem[]): Mapa | null {
+    const ultimoBot = [...msgs].reverse().find((m) => m.tipo === "bot");
+    if (!ultimoBot || ultimoBot.eh_fallback) {
+        return null;
+    }
+    return mapaTemFeatures(ultimoBot.mapa) ? ultimoBot.mapa! : null;
+}
+
+function textoIndicaFallback(texto?: string | null): boolean {
+    if (!texto) return false;
+    return /não encontrei informações|não consegui entender|desculpe,\s*não encontrei/i.test(texto);
+}
+
+function respostaEhFallback(resposta: ChatMensagemResponseWithFallback): boolean {
+    return Boolean(
+        resposta.eh_fallback
+        || resposta.fallback_info
+        || textoIndicaFallback(resposta.texto_resposta)
+    );
+}
+
 export default function Chatbot() {
     const [mensagens, setMensagens] = useState<Mensagem[]>([]);
     const [input, setInput] = useState("");
@@ -81,7 +107,8 @@ export default function Chatbot() {
     const navigate = useNavigate();
     const { setTitle } = useTitle();
     const { selectedMunicipioNome, clearFilters } = useFilter();
-    const possuiGeoJson = Boolean(dadosMapa?.features?.length);
+    const possuiGeoJson = mapaTemFeatures(dadosMapa);
+    const exibirLayoutMapa = mostrarMapa && possuiGeoJson;
     const geoJsonParaRenderizar = possuiGeoJson ? dadosMapa : null;
 
     const queimadasLocalizacoes = dadosMapa?.features
@@ -140,13 +167,26 @@ export default function Chatbot() {
                                     };
                                 }
 
+                                const ehFallbackHistorico = Boolean(
+                                    item.eh_fallback
+                                    || item.fallback_info
+                                    || item.tipo_fallback
+                                    || textoIndicaFallback(item.resposta)
+                                );
+
                                 msgs.push({
                                     id: botId,
                                     texto: item.resposta,
                                     tipo: "bot",
                                     autor: "Atlas",
                                     fontes: item.fontes?.length ? item.fontes : undefined,
-                                    mapa: mapaItem
+                                    mapa: mapaItem,
+                                    eh_fallback: ehFallbackHistorico,
+                                    tipo_fallback: item.tipo_fallback
+                                        || item.fallback_info?.tipo_fallback
+                                        || (ehFallbackHistorico ? "data_fallback" : undefined),
+                                    sugestoes: item.fallback_info?.sugestoes,
+                                    pergunta_usuario: item.fallback_info?.mensagem_usuario || item.pergunta,
                                 });
 
                                 if (item.feedback && item.feedback.avaliacao) {
@@ -166,18 +206,11 @@ export default function Chatbot() {
                             setTitle("Chat");
                         }
 
-                        const ultimaComMapa = msgs.slice().reverse().find(msg => msg.mapa);
-                        if (ultimaComMapa?.mapa) {
-                            setMostrarMapa(true);
-                            setDadosMapa(ultimaComMapa.mapa);
+                        const mapaHistorico = resolverMapaDasMensagens(msgs);
+                        setMostrarMapa(Boolean(mapaHistorico));
+                        setDadosMapa(mapaHistorico);
+                        if (mapaHistorico) {
                             setMapRenderKey(Date.now());
-                        } else if (data.mapa && data.mapa.features?.length) {
-                            setMostrarMapa(true);
-                            setDadosMapa(data.mapa);
-                            setMapRenderKey(Date.now());
-                        } else {
-                            setMostrarMapa(false);
-                            setDadosMapa(null);
                         }
                     } else {
                         setMensagens([]);
@@ -186,7 +219,6 @@ export default function Chatbot() {
                     setExitandoWelcome(false);
                 })
                 .catch(() => {
-                    setMensagens([]);
                     setChatIniciado(true);
                     setExitandoWelcome(false);
                 });
@@ -253,12 +285,14 @@ export default function Chatbot() {
         try {
             const resposta: ChatMensagemResponseWithFallback = await enviarMensagemComFallback(textoParaEnviar, chatId, selectedMunicipioNome);
             
-            if (isNovoChat && resposta.chat_id) {
+            if (isNovoChat && resposta.chat_id && !respostaEhFallback(resposta)) {
                 navigate(`/chatbot?chat_id=${resposta.chat_id}`, { replace: true });
                 window.dispatchEvent(new Event('chatUpdated'));
             }
 
-            setChatId(resposta.chat_id);
+            if (!resposta.eh_fallback) {
+                setChatId(resposta.chat_id);
+            }
 
             const mensagemBot: Mensagem = {
                 id: resposta.resposta_id,
@@ -267,32 +301,39 @@ export default function Chatbot() {
                 autor: "Atlas",
                 fontes: resposta.fontes_citadas,
                 mapa: resposta.mapa,
-                eh_fallback: !!resposta.eh_fallback,
-                tipo_fallback: resposta.tipo_fallback || undefined,
-                sugestoes: resposta.fallback_info?.sugestoes || undefined
+                eh_fallback: respostaEhFallback(resposta),
+                tipo_fallback: resposta.tipo_fallback
+                    || resposta.fallback_info?.tipo_fallback
+                    || (textoIndicaFallback(resposta.texto_resposta) ? "data_fallback" : undefined),
+                sugestoes: resposta.fallback_info?.sugestoes || undefined,
+                pergunta_usuario: resposta.fallback_info?.mensagem_usuario ?? textoParaEnviar,
             };
 
-            setMensagens(prev => [...prev, mensagemBot]);
+            setMensagens((prev) => {
+                const proximas = [...prev, mensagemBot];
+                const mapaAtivo = resolverMapaDasMensagens(proximas);
+                setMostrarMapa(Boolean(mapaAtivo));
+                setDadosMapa(mapaAtivo);
+                if (mapaAtivo) {
+                    setMapRenderKey(Date.now());
+                }
+                return proximas;
+            });
             setDigitando(false);
-
-            if (resposta.mapa) {
-                setMostrarMapa(true);
-                setDadosMapa(resposta.mapa);
-                setMapRenderKey(Date.now());
-            } else {
-                setMostrarMapa(false);
-                setDadosMapa(null);
-            }
         } catch (error: any) {
-            setMensagens(prev => [...prev, {
+            const mensagemErro: Mensagem = {
                 id: Date.now().toString(),
                 texto: "Erro ao consultar o backend. Tente novamente.",
                 tipo: "bot",
                 autor: "Atlas",
                 eh_fallback: true,
                 tipo_fallback: "connection_fallback",
-                sugestoes: []
-            }]);
+                sugestoes: [],
+                pergunta_usuario: textoParaEnviar,
+            };
+            setMensagens((prev) => [...prev, mensagemErro]);
+            setMostrarMapa(false);
+            setDadosMapa(null);
             setDigitando(false);
         }
     };
@@ -308,7 +349,7 @@ export default function Chatbot() {
 
     return (
         <div className={styles.pageContainer}>
-            <div className={`${styles.chatLayout} ${mostrarMapa && dadosMapa ? styles.layoutWithMap : ""}`}>
+            <div className={`${styles.chatLayout} ${exibirLayoutMapa ? styles.layoutWithMap : ""}`}>
                 
                 <div className={styles.chatContainer}>
                     
@@ -382,7 +423,7 @@ export default function Chatbot() {
                     <div className={`
                         ${styles.chatInputContainer} 
                         ${!chatIniciado ? styles.welcomeInput : ""} 
-                        ${mostrarMapa && dadosMapa ? styles.withMap : ""} 
+                        ${exibirLayoutMapa ? styles.withMap : ""} 
                     `}>
                         
                         {!chatIniciado && (
@@ -400,7 +441,7 @@ export default function Chatbot() {
                 </div>
 
                 {/* MAPA */}
-                {mostrarMapa && dadosMapa && (
+                {exibirLayoutMapa && dadosMapa && (
                     <div className={styles.mapContainer}>
                         <MapComponent
                             poluicaoLocalizacoes={[]}

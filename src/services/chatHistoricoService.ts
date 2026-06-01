@@ -1,5 +1,7 @@
 // src/services/chatHistoricoService.ts
 
+import { API_BASE_URL } from "../config/env";
+import { headersAuthSomente } from "./authService";
 import type { Mapa } from "./chatService";
 
 export interface FeedbackHistorico {
@@ -36,7 +38,9 @@ export interface HistoricoChatResponse {
 }
 
 export async function buscarHistoricoChat(chat_id: string): Promise<HistoricoChatResponse> {
-  const response = await fetch(`http://127.0.0.1:5000/chat/${chat_id}/historico`);
+  const response = await fetch(`${API_BASE_URL}/chat/${chat_id}/historico`, {
+    headers: headersAuthSomente(),
+  });
   if (!response.ok) {
     throw new Error("Erro ao buscar histórico do chat");
   }
@@ -52,7 +56,9 @@ export interface ResumoRelatorioData {
 
 export async function buscarResumoRelatorio(chatId: string): Promise<ResumoRelatorioData> {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/chat/${chatId}/resumo`);
+        const response = await fetch(`${API_BASE_URL}/chat/${chatId}/resumo`, {
+            headers: headersAuthSomente(),
+        });
         if (!response.ok) throw new Error("Erro ao buscar resumo");
         return response.json();
     } catch (error) {

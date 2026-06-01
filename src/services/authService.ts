@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:5000";
+import { API_BASE_URL } from "../config/env";
 
 export const AUTH_TOKEN_KEY = "atlas_token";
 export const AUTH_CHANGED_EVENT = "atlas_auth_changed";
@@ -26,7 +26,7 @@ export interface UsuarioResponse {
 }
 
 export async function login(email: string, senha: string): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE}/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, senha }),
@@ -41,7 +41,7 @@ export async function login(email: string, senha: string): Promise<LoginResponse
 }
 
 export async function getMe(token: string): Promise<UsuarioResponse> {
-  const response = await fetch(`${API_BASE}/auth/me`, {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -52,28 +52,53 @@ export async function getMe(token: string): Promise<UsuarioResponse> {
   return response.json();
 }
 
+function notificarMudancaAuth(): void {
+  window.dispatchEvent(new Event("authChanged"));
+}
+
+export function salvarToken(token: string): void {
+  localStorage.setItem("atlas_token", token);
+  notificarMudancaAuth();
+  notifyAuthChanged();
+}
 function notifyAuthChanged(): void {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
   }
 }
 
-export function salvarToken(token: string): void {
-  localStorage.setItem(AUTH_TOKEN_KEY, token);
-  notifyAuthChanged();
-}
 
 export function obterToken(): string | null {
   return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 export function removerToken(): void {
-  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem("atlas_token");
+  notificarMudancaAuth();
   notifyAuthChanged();
 }
 
 export function estaAutenticado(): boolean {
   return !!obterToken();
+}
+
+/** Headers com Content-Type; inclui Bearer apenas se houver token. */
+export function headersComAuth(extra?: HeadersInit): HeadersInit {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(extra as Record<string, string>),
+  };
+  const token = obterToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+/** Headers de autenticação opcional (GET/DELETE sem body). */
+export function headersAuthSomente(): HeadersInit {
+  const token = obterToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {

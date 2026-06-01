@@ -2,7 +2,15 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-height: calc(100dvh - 12vh);
   position: relative;
+}
+
+.chatLayout:not(.layoutWithMap) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .chatLayout {
@@ -23,14 +31,15 @@
 .chatContainer {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   width: 100%;
   max-width: 850px;
   margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
   border: none;
-  position: relative; 
+  position: relative;
 }
 
 .pageContainer h1 {
@@ -52,11 +61,15 @@
 
 .messagesArea {
   width: 100%;
+  flex: 0 0 auto;
+  min-height: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-bottom: 160px;
+  padding-bottom: 110px;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .chatInputContainer {
@@ -68,11 +81,22 @@
   transform: translateX(-50%);
   width: 100%;
   max-width: 850px;
-  padding: 20px;
+  padding: 10px 20px max(14px, env(safe-area-inset-bottom));
   z-index: 100;
   background: var(--background-primary);
-  box-shadow: 0 -15px 20px var(--background-primary);
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+  box-shadow: none;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chatInputContainer:not(.welcomeInput)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -18px;
+  height: 18px;
+  background: linear-gradient(to bottom, transparent, var(--background-primary));
+  pointer-events: none;
 }
 
 .chatInputContainer.withMap {
@@ -96,21 +120,78 @@
 }
 
 .mapContainer {
-  position: fixed;
-  top: 80px;
   --sidebar-width: clamp(260px, 22vw, 340px);
   --content-padding: clamp(0px, 2vw, 20px);
-  left: calc(50vw + (var(--sidebar-width) / 2) + 10px);
-  width: min(590px, calc(50vw - (var(--sidebar-width) / 2) - var(--content-padding) - 10px));
-  height: calc(100vh - 120px);
   border-radius: 12px;
   overflow: hidden;
-  z-index: 90;
+  min-height: 400px;
+}
+
+@media (min-width: 1025px) {
+  .chatLayout.layoutWithMap {
+    --conversation-sidebar-width: clamp(260px, 22vw, 340px);
+    --conversation-content-padding: clamp(0px, 2vw, 20px);
+    --conversation-gap: 20px;
+    --conversation-nav-height: 10vh;
+    --conversation-top-gap: 10px;
+    --conversation-panel-width: min(
+      850px,
+      calc(50vw - (var(--conversation-sidebar-width) / 2) - var(--conversation-content-padding) - (var(--conversation-gap) / 2))
+    );
+    width: 100%;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--conversation-gap);
+    align-items: start;
+    min-height: calc(100dvh - var(--conversation-nav-height));
+  }
+
+  .layoutWithMap .chatContainer {
+    width: 100%;
+    max-width: none;
+    min-height: calc(100dvh - var(--conversation-nav-height));
+    margin: 0;
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .layoutWithMap .mapContainer {
+    position: fixed;
+    top: calc(var(--conversation-nav-height) + var(--conversation-top-gap));
+    left: calc(75vw + (var(--conversation-sidebar-width) / 4));
+    transform: translateX(-50%);
+    width: var(--conversation-panel-width);
+    height: calc(100dvh - var(--conversation-nav-height) - (var(--conversation-top-gap) * 2));
+    min-height: 0;
+    z-index: 90;
+  }
+
+  .layoutWithMap .mapContainer > div {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .layoutWithMap .messagesArea {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    padding-bottom: 130px;
+    overflow-y: visible;
+  }
+
+  .layoutWithMap .chatInputContainer.withMap {
+    left: calc(25vw + var(--conversation-sidebar-width) - (var(--conversation-sidebar-width) / 4));
+    width: var(--conversation-panel-width);
+    max-width: var(--conversation-panel-width);
+    box-sizing: border-box;
+  }
 }
 
 @media (max-width: 1200px) and (min-width: 1025px) {
-  .mapContainer {
-    --sidebar-width: clamp(230px, 28vw, 300px);
+  .chatLayout.layoutWithMap {
+    --conversation-sidebar-width: clamp(230px, 28vw, 300px);
   }
 }
 
@@ -333,6 +414,24 @@ html {
     max-width: 100%;
   }
 
+  .chatLayout.layoutWithMap::before {
+    content: "";
+    position: fixed;
+    top: var(--conversation-nav-height);
+    left: calc(50vw + (var(--conversation-sidebar-width) / 2));
+    transform: translateX(-50%);
+    width: min(850px, calc(100vw - var(--conversation-sidebar-width) - (var(--conversation-gutter) * 2)));
+    height: calc(var(--conversation-top-gap) + var(--conversation-map-height) + 28px);
+    background:
+      linear-gradient(to bottom, var(--background-primary) 0%, var(--background-primary) calc(100% - 18px), transparent 100%),
+      var(--background-primary);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 14px 18px var(--background-primary);
+    pointer-events: none;
+    z-index: 94;
+  }
+
   .chatLayout.layoutWithMap:has(.mapContainer) {
     grid-template-columns: 1fr;
   }
@@ -350,26 +449,29 @@ html {
     transform: translateX(-50%);
     width: min(850px, calc(100vw - var(--conversation-sidebar-width) - (var(--conversation-gutter) * 2)));
     height: var(--conversation-map-height);
+    min-height: 0;
+    max-height: var(--conversation-map-height);
     z-index: 95;
   }
 
   .layoutWithMap .mapContainer > div {
+    height: 100%;
     min-height: 0;
   }
 
   .layoutWithMap .messagesArea {
-    position: fixed;
-    top: calc(var(--conversation-nav-height) + var(--conversation-top-gap) + var(--conversation-map-height) + 14px);
-    bottom: var(--conversation-input-clearance);
-    left: calc(50vw + (var(--conversation-sidebar-width) / 2));
-    transform: translateX(-50%);
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
     width: min(850px, calc(100vw - var(--conversation-sidebar-width) - (var(--conversation-gutter) * 2)));
+    margin: 0 auto;
     max-height: none;
-    padding: 0 8px 18px;
+    box-sizing: border-box;
+    padding: calc(var(--conversation-top-gap) + var(--conversation-map-height) + 14px) 8px var(--conversation-input-clearance);
     overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    overflow-y: visible;
   }
 
   .layoutWithMap .chatInputContainer.withMap {
@@ -389,6 +491,38 @@ html {
     --conversation-top-gap: 10px;
     --conversation-map-height: clamp(190px, 31dvh, 280px);
     --conversation-input-clearance: calc(108px + env(safe-area-inset-bottom));
+  }
+
+  .chatLayout.layoutWithMap::before {
+    display: none;
+  }
+
+  .layoutWithMap .mapContainer {
+    overflow: visible;
+  }
+
+  .layoutWithMap .mapContainer::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 98vw;
+    height: calc(100% + 16px);
+    border-radius: 14px;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(to bottom, var(--background-primary) 0%, var(--background-primary) calc(100% - 10px), transparent 100%),
+      var(--background-primary);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 10px var(--background-primary);
+  }
+
+  .layoutWithMap .mapContainer > div {
+    position: relative;
+    z-index: 1;
   }
 
   .chatInputContainer {
@@ -443,11 +577,6 @@ html {
     gap: 15px;
   }
 
-  .messagesArea {
-    max-height: 300px;
-  }
-
-  
   .welcomeTitle {
     padding: 0 8px;
   }

@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:5000";
+import { API_BASE_URL } from "../config/env";
 
 export interface MunicipioSearchItem {
     id: number;
@@ -17,7 +17,7 @@ export async function searchMunicipios(
     if (query.trim()) params.set("q", query.trim());
     if (estadoSigla) params.set("estado_sigla", estadoSigla);
 
-    const response = await fetch(`${API_BASE}/municipal/search?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/municipal/search?${params.toString()}`);
     if (!response.ok) {
         throw new Error("Erro ao buscar municípios");
     }
@@ -39,7 +39,7 @@ export interface MunicipioFeatureCollection {
 export async function fetchMunicipioBoundary(
     municipioId: number
 ): Promise<MunicipioFeatureCollection | null> {
-    const response = await fetch(`${API_BASE}/municipal/geojson/layers/municipios`);
+    const response = await fetch(`${API_BASE_URL}/municipal/geojson/layers/municipios`);
     if (!response.ok) return null;
 
     const json: MunicipioFeatureCollection = await response.json();
@@ -58,7 +58,7 @@ export async function fetchLayerByMunicipio(
     municipioId: number
 ): Promise<MunicipioFeatureCollection> {
     const response = await fetch(
-        `${API_BASE}/municipal/geojson/layers/${layerName}?municipio_id=${municipioId}`
+        `${API_BASE_URL}/municipal/geojson/layers/${layerName}?municipio_id=${municipioId}`
     );
     if (!response.ok) return { type: "FeatureCollection", features: [] };
     return response.json();

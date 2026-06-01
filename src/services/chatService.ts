@@ -1,4 +1,5 @@
-
+import { API_BASE_URL } from "../config/env";
+import { headersComAuth } from "./authService";
 
 export interface ChatMensagemRequest {
   pergunta: string;
@@ -37,6 +38,11 @@ export interface MapaFeatureProperties {
   dist_media_m?: number;
   dist_min_m?: number;
   nivel_risco_ambiental?: "baixo" | "medio" | "alto" | string;
+  score_ambiental?: number;
+  score_social?: number;
+  score_governanca?: number;
+  score_geral?: number;
+  classificacao?: string;
   tipo_alerta?: string;
 }
 
@@ -87,11 +93,9 @@ export async function enviarMensagemChat(
   if (municipio) {
     body.municipio = municipio;
   }
-  const response = await fetch("http://127.0.0.1:5000/chat/mensagem", {
+  const response = await fetch(`${API_BASE_URL}/chat/mensagem`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headersComAuth(),
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -106,11 +110,9 @@ export async function feedbackChat(
   resposta_sistema_id: string,
   avaliacao: 1 | -1
 ): Promise<void> {
-  const response = await fetch("http://127.0.0.1:5000/chat/feedback", {
+  const response = await fetch(`${API_BASE_URL}/chat/feedback`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headersComAuth(),
     body: JSON.stringify({ resposta_sistema_id, avaliacao }),
   });
   if (!response.ok) {

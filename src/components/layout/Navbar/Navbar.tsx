@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import styles from "./Navbar.module.css";
 import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
@@ -12,10 +12,11 @@ import {
     removerToken,
     usuarioEhAdmin,
 } from "../../../services/authService";
-import { dispararAtualizacaoManual } from "../../../services/adminService";
+import { dispararAtualizacaoManual, obterStatusEtl } from "../../../services/adminService";
 
 type NavbarProps = {
     pageTitle?: string;
+    isLoggedIn?: boolean;
     onLoginClick?: () => void;
     onMenuClick?: () => void;
     isMobileMenuOpen?: boolean;
@@ -23,17 +24,55 @@ type NavbarProps = {
 
 export default function Navbar({
     pageTitle,
+    isLoggedIn = false,
     onLoginClick,
     onMenuClick,
     isMobileMenuOpen = false,
 }: NavbarProps) {
     const { theme, toggleTheme, mode } = useTheme();
     const { isLoading } = useLoading();
+    const { title } = useTitle();
 
     const [isSpinning, setIsSpinning] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    
+    // Estados de controle de status e notificações visuais
+    const [etlStatusText, setEtlStatusText] = useState<string | null>(null);
+    const [notificacao, setNotificacao] = useState<{ mensagem: string; tipo: "sucesso" | "erro" } | null>(null);
 
+    // Função para checar o status atual do banco de dados (Sincronizada com o Python)
+    const checarStatusAtual = useCallback(async () => {
+        const token = obterToken();
+        if (!token || !isAdmin) return;
+
+        try {
+            const resposta = await obterStatusEtl();
+            
+            // Tratamos a string em minúsculo para evitar incompatibilidade ("RUNNING" vs "running")
+            const statusDoServidor = resposta?.data?.status_atual?.toLowerCase() || "";
+
+            if (statusDoServidor === "running" || statusDoServidor === "em_processamento") {
+                setIsUpdating(true);
+                setEtlStatusText("Processando ETL...");
+            } else if (statusDoServidor === "completed" || statusDoServidor === "sucesso") {
+                setIsUpdating(false);
+                setEtlStatusText("Atualização concluída!");
+                setTimeout(() => setEtlStatusText(null), 5000);
+            } else if (statusDoServidor === "failed" || statusDoServidor === "erro") {
+                setIsUpdating(false);
+                setEtlStatusText("Falha na última sincronização.");
+                setTimeout(() => setEtlStatusText(null), 5000);
+            } else {
+                setIsUpdating(false);
+                setEtlStatusText(null);
+            }
+        } catch (err) {
+            console.error("Erro ao checar status do ETL:", err);
+        }
+    }, [isAdmin]);
+
+    // Inicialização do estado de administrador
     useEffect(() => {
         let isMounted = true;
 
@@ -56,14 +95,9 @@ export default function Navbar({
             }
         };
 
-        const handleAuthChanged = () => {
-            void loadAdminStatus();
-        };
-
+        const handleAuthChanged = () => { void loadAdminStatus(); };
         const handleStorageChanged = (event: StorageEvent) => {
-            if (event.key === AUTH_TOKEN_KEY) {
-                void loadAdminStatus();
-            }
+            if (event.key === AUTH_TOKEN_KEY) { void loadAdminStatus(); }
         };
 
         void loadAdminStatus();
@@ -77,27 +111,54 @@ export default function Navbar({
         };
     }, []);
 
+    // Polling ativo: Fica perguntando ao banco a cada 5 segundos enquanto estiver rodando
+    useEffect(() => {
+        if (!isUpdating || !isAdmin) return;
+
+        const interval = setInterval(() => {
+            void checarStatusAtual();
+        }, 60000);
+
+        return () => clearInterval(interval);
+    }, [isUpdating, isAdmin, checarStatusAtual]);
+
+    // Primeira checagem proativa assim que o usuário é validado como admin
+    useEffect(() => {
+        if (isAdmin) {
+            void checarStatusAtual();
+        }
+    }, [isAdmin, checarStatusAtual]);
+
     const handleToggleTheme = () => {
         setIsSpinning(true);
         toggleTheme();
         setTimeout(() => setIsSpinning(false), 600);
     };
 
+    const mostraFeedbackTemporario = (mensagem: string, tipo: "sucesso" | "erro") => {
+        setNotificacao({ mensagem, tipo });
+        setTimeout(() => setNotificacao(null), 6000);
+    };
+
     const handleManualUpdate = async () => {
         if (isUpdating) return;
 
         setIsUpdating(true);
+        setEtlStatusText("Iniciando...");
 
         try {
             const response = await dispararAtualizacaoManual();
-            window.alert(`${response.message}\nTask ID: ${response.task_id}`);
+            setEtlStatusText("Processando ETL...");
+            mostraFeedbackTemporario(`${response.message} ID da Task: ${response.task_id}`, "sucesso");
         } catch (error) {
-            const message = error instanceof Error ? error.message : "Erro ao iniciar atualizacao.";
-            window.alert(message);
-        } finally {
+            const message = error instanceof Error ? error.message : "Erro ao iniciar atualização.";
+            mostraFeedbackTemporario(message, "erro");
             setIsUpdating(false);
+            setEtlStatusText(null);
         }
     };
+
+    // --- ÍCONES INTERNOS (SVG) ---
 
     const SunLightIcon = () => (
         <svg
@@ -112,6 +173,7 @@ export default function Navbar({
             strokeLinejoin="round"
             onClick={handleToggleTheme}
             className={isSpinning ? styles.spin : ""}
+            style={{ cursor: "pointer" }}
         >
             <circle cx="12" cy="12" r="4" />
             <path d="M12 2v2" />
@@ -134,6 +196,7 @@ export default function Navbar({
             xmlns="http://www.w3.org/2000/svg"
             onClick={handleToggleTheme}
             className={isSpinning ? styles.spin : ""}
+            style={{ cursor: "pointer" }}
         >
             <path d="M21 28C24.866 28 28 24.866 28 21C28 17.134 24.866 14 21 14C17.134 14 14 17.134 14 21C14 24.866 17.134 28 21 28Z" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M21 7H21.0175" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -176,8 +239,23 @@ export default function Navbar({
         </svg>
     );
 
-    const { title } = useTitle();
-    
+    const HamburgerIcon = ({ isOpen }: { isOpen: boolean }) => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            {isOpen ? (
+                <>
+                    <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                    <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                </>
+            ) : (
+                <>
+                    <path d="M4 7H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                    <path d="M4 12H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                    <path d="M4 17H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                </>
+            )}
+        </svg>
+    );
+
     return (
         <header
             className={styles.container}
@@ -194,7 +272,6 @@ export default function Navbar({
                         onClick={onMenuClick}
                         aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
                         aria-expanded={isMobileMenuOpen}
-                        aria-controls="app-sidebar"
                     >
                         <HamburgerIcon isOpen={isMobileMenuOpen} />
                     </button>
@@ -216,16 +293,21 @@ export default function Navbar({
                     className={styles.actions}
                     style={{ color: theme.orange?.main || "orange" }}
                 >
+                    {/* Texto informativo de Status Inline */}
+                    {isAdmin && etlStatusText && (
+                        <span className={styles.statusBadge}>
+                            {etlStatusText}
+                        </span>
+                    )}
+
                     {isAdmin && (
                         <Skeleton isLoading={isLoading} variant="rectangular">
                             <button
                                 type="button"
-                                className={styles.iconButton}
+                                className={`${styles.iconButton} ${isUpdating ? styles.disabledBtn : ""}`}
                                 onClick={handleManualUpdate}
                                 disabled={isUpdating}
-                                aria-label="Atualizar base de dados"
-                                aria-busy={isUpdating}
-                                title="Atualizar base de dados"
+                                title={isUpdating ? "Sincronização em andamento" : "Atualizar base de dados"}
                             >
                                 <RefreshCcwDotIcon className={isUpdating ? styles.spin : ""} />
                             </button>
@@ -241,13 +323,20 @@ export default function Navbar({
                             type="button"
                             className={styles.iconButton}
                             onClick={onLoginClick}
-                            aria-label="Abrir login"
                         >
                             <UserIcon />
                         </button>
                     </Skeleton>
                 </div>
             </div>
+
+            {/* Notificação Toast moderna flutuante */}
+            {notificacao && (
+                <div className={`${styles.toast} ${styles[notificacao.tipo]}`}>
+                    <p>{notificacao.mensagem}</p>
+                    <button type="button" onClick={() => setNotificacao(null)}>×</button>
+                </div>
+            )}
 
             <div
                 className={styles.hr}
@@ -256,20 +345,3 @@ export default function Navbar({
         </header>
     );
 }
-
-const HamburgerIcon = ({ isOpen }: { isOpen: boolean }) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        {isOpen ? (
-            <>
-                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </>
-        ) : (
-            <>
-                <path d="M4 7H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M4 12H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M4 17H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </>
-        )}
-    </svg>
-);

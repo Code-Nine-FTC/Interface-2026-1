@@ -1,6 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import styles from "./ChatMessage.module.css";
+import { API_BASE_URL } from "../../../config/env";
 import { FonteCitada, Mapa } from "../../../services/chatService";
 
 export interface Mensagem {
@@ -10,9 +11,10 @@ export interface Mensagem {
     autor?: string;
     fontes?: FonteCitada[];
     mapa?: Mapa;
-        eh_fallback?: boolean;
-        tipo_fallback?: string;
-        sugestoes?: string[];
+    eh_fallback?: boolean;
+    tipo_fallback?: string;
+    sugestoes?: string[];
+    pergunta_usuario?: string;
 }
 
 interface ChatMessageProps {
@@ -34,29 +36,47 @@ export default function ChatMessage({
     const [copiadoQgis, setCopiadoQgis] = React.useState(false);
 
     const copiarQgisUrl = () => {
-        const url = "http://localhost:5000/chat/resposta/" + msg.id + "/geojson";
+        const url = `${API_BASE_URL}/chat/resposta/${msg.id}/geojson`;
         navigator.clipboard.writeText(url).then(() => {
             setCopiadoQgis(true);
             setTimeout(() => setCopiadoQgis(false), 2000);
         });
     };
     if (msg.tipo === "bot") {
+        const textoMarkdown = msg.fontes && msg.fontes.length > 0
+            ? msg.texto.replace(/\*{0,2}Fontes?\s*consultadas:?\*{0,2}[\s\S]*/i, "").trim()
+            : msg.texto;
+        const exibirQgis = !msg.eh_fallback && Boolean(msg.mapa?.features?.length);
+
+        if (msg.eh_fallback) {
+            return (
+                <div className={styles.botResponseCard}>
+                    <div className={styles.fallbackWrapper}>
+                        <FallbackResponse
+                            tipo_fallback={(msg.tipo_fallback as any) || "generic_fallback"}
+                            mensagem_usuario={msg.pergunta_usuario || ""}
+                            sugestoes={msg.sugestoes}
+                            onSelectSugestao={onSelectSugestao}
+                        />
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className={styles.botResponseCard}>
                 <div className={styles.botCardBody}>
                     <div className={styles.markdownContent}>
-                        <ReactMarkdown>
-                            {msg.fontes && msg.fontes.length > 0
-                                ? msg.texto.replace(/\*{0,2}Fontes?\s*consultadas:?\*{0,2}[\s\S]*/i, '').trim()
-                                : msg.texto}
-                        </ReactMarkdown>
-                        <button
-                            onClick={copiarQgisUrl}
-                            className={styles.qgisLink}
-                            title="Copiar URL para utilizar no QGIS"
-                        >
-                            {copiadoQgis ? "Copiado!" : "Copiar Link QGIS"}
-                        </button>
+                        <ReactMarkdown>{textoMarkdown}</ReactMarkdown>
+                        {exibirQgis && (
+                            <button
+                                onClick={copiarQgisUrl}
+                                className={styles.qgisLink}
+                                title="Copiar URL para utilizar no QGIS"
+                            >
+                                {copiadoQgis ? "Copiado!" : "Copiar Link QGIS"}
+                            </button>
+                        )}
                     </div>
                     {msg.fontes && msg.fontes.length > 0 && (
                         <div className={styles.fontesCitadas}>
@@ -114,16 +134,6 @@ export default function ChatMessage({
                                 </div>
                             </>
                         )}
-                    </div>
-                )}
-                {msg.eh_fallback && (
-                    <div className={styles.fallbackWrapper}>
-                        <FallbackResponse
-                            tipo_fallback={(msg.tipo_fallback as any) || "generic_fallback"}
-                            mensagem_usuario={msg.texto}
-                            sugestoes={msg.sugestoes}
-                            onSelectSugestao={onSelectSugestao}
-                        />
                     </div>
                 )}
             </div>
