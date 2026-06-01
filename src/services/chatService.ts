@@ -38,6 +38,11 @@ export interface MapaFeatureProperties {
   dist_media_m?: number;
   dist_min_m?: number;
   nivel_risco_ambiental?: "baixo" | "medio" | "alto" | string;
+  score_ambiental?: number;
+  score_social?: number;
+  score_governanca?: number;
+  score_geral?: number;
+  classificacao?: string;
   tipo_alerta?: string;
 }
 

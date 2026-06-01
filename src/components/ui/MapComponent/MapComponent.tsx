@@ -52,7 +52,7 @@ function GeoJsonLayer({ data }: { data: Mapa }) {
     const layer = L.geoJSON(data as any, {
       style: getGeoJsonStyle,
       pointToLayer,
-      onEachFeature: bindFeaturePopup,
+      onEachFeature: bindFeaturePopupComScores(buildScoresPorImovel(data)),
     });
     layer.addTo(map);
     layerRef.current = layer;
@@ -147,6 +147,15 @@ function formatNum(value: number, decimals: number = 2): string {
   return value.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
 function escapeHtml(valor: unknown): string {
   return String(valor).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;',
@@ -161,8 +170,93 @@ function linhaPopup(label: string, valor: unknown): string {
   return `<div class="atlas-popup-row"><span class="atlas-popup-label">${escapeHtml(label)}</span><span class="atlas-popup-value">${escapeHtml(valor)}</span></div>`;
 }
 
-function bindFeaturePopup(feature: any, layer: L.Layer) {
-  const properties = (feature?.properties ?? {}) as Record<string, unknown>;
+type ScoreAmbientalPopup = {
+  score_ambiental?: number;
+  score_social?: number;
+  score_governanca?: number;
+  score_geral?: number;
+  classificacao?: unknown;
+};
+
+function chaveImovel(properties: Record<string, unknown>): string | null {
+  const id = properties.imovel_id;
+  if (typeof id === 'string' && id.trim()) return id;
+  if (typeof id === 'number' && Number.isFinite(id)) return String(id);
+  return null;
+}
+
+function extrairScoreAmbiental(properties: Record<string, unknown>): ScoreAmbientalPopup | null {
+  const scoreGeral = toFiniteNumber(properties.score_geral);
+  if (scoreGeral === null) return null;
+
+  const scoreAmbiental = toFiniteNumber(properties.score_ambiental);
+  const scoreSocial = toFiniteNumber(properties.score_social);
+  const scoreGovernanca = toFiniteNumber(properties.score_governanca);
+
+  return {
+    score_geral: scoreGeral,
+    ...(scoreAmbiental !== null ? { score_ambiental: scoreAmbiental } : {}),
+    ...(scoreSocial !== null ? { score_social: scoreSocial } : {}),
+    ...(scoreGovernanca !== null ? { score_governanca: scoreGovernanca } : {}),
+    ...(properties.classificacao ? { classificacao: properties.classificacao } : {}),
+  };
+}
+
+function buildScoresPorImovel(data: Mapa): Map<string, ScoreAmbientalPopup> {
+  const scores = new Map<string, ScoreAmbientalPopup>();
+
+  for (const feature of data.features ?? []) {
+    const properties = (feature?.properties ?? {}) as Record<string, unknown>;
+    const key = chaveImovel(properties);
+    const score = extrairScoreAmbiental(properties);
+    if (key && score) scores.set(key, score);
+  }
+
+  return scores;
+}
+
+function propriedadesComScoreRelacionado(
+  properties: Record<string, unknown>,
+  scoresPorImovel: Map<string, ScoreAmbientalPopup>
+): Record<string, unknown> {
+  if (extrairScoreAmbiental(properties)) return properties;
+
+  const key = chaveImovel(properties);
+  if (!key) return properties;
+
+  const score = scoresPorImovel.get(key);
+  return score ? { ...properties, ...score } : properties;
+}
+
+function adicionarScoreAmbiental(linhas: string[], properties: Record<string, unknown>) {
+  const scoreGeral = toFiniteNumber(properties.score_geral);
+  if (scoreGeral === null) return;
+
+  linhas.push(linhaPopup('Score geral', formatNum(scoreGeral, 1)));
+
+  if (properties.classificacao) {
+    linhas.push(linhaPopup('Classificação ASG', properties.classificacao));
+  }
+
+  const scoreAmbiental = toFiniteNumber(properties.score_ambiental);
+  if (scoreAmbiental !== null) {
+    linhas.push(linhaPopup('Ambiental', formatNum(scoreAmbiental, 1)));
+  }
+
+  const scoreSocial = toFiniteNumber(properties.score_social);
+  if (scoreSocial !== null) {
+    linhas.push(linhaPopup('Social', formatNum(scoreSocial, 1)));
+  }
+
+  const scoreGovernanca = toFiniteNumber(properties.score_governanca);
+  if (scoreGovernanca !== null) {
+    linhas.push(linhaPopup('Governança', formatNum(scoreGovernanca, 1)));
+  }
+}
+
+function bindFeaturePopup(feature: any, layer: L.Layer, scoresPorImovel = new Map<string, ScoreAmbientalPopup>()) {
+  const propertiesBase = (feature?.properties ?? {}) as Record<string, unknown>;
+  const properties = propriedadesComScoreRelacionado(propertiesBase, scoresPorImovel);
   const tipo = String(properties.tipo ?? 'Geometria');
   let titulo = 'Geometria';
   const linhas: string[] = [];
@@ -218,8 +312,14 @@ function bindFeaturePopup(feature: any, layer: L.Layer) {
     }
   }
 
+  adicionarScoreAmbiental(linhas, properties);
+
   const html = `<div class="atlas-popup"><div class="atlas-popup-title">${escapeHtml(titulo)}</div>${linhas.join('')}</div>`;
   layer.bindPopup(html);
+}
+
+function bindFeaturePopupComScores(scoresPorImovel: Map<string, ScoreAmbientalPopup>) {
+  return (feature: any, layer: L.Layer) => bindFeaturePopup(feature, layer, scoresPorImovel);
 }
 
 const poluicaoIcon = L.divIcon({
