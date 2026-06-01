@@ -296,6 +296,33 @@
     filter: brightness(1.03);
 }
 
+.logoutButton {
+    border: 1px solid var(--orange-main);
+    border-radius: 12px;
+    padding: 0.95rem 1.1rem;
+    background: transparent;
+    color: var(--orange-main);
+    font: inherit;
+    font-size: 0.94rem;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+}
+
+.logoutButton:hover {
+    background: rgba(255, 138, 36, 0.08);
+}
+
+.accountEmail {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: var(--background-secondary, rgba(0, 0, 0, 0.04));
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+
 .helperText {
     margin: 0;
     color: var(--text-light);

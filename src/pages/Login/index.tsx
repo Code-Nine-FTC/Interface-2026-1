@@ -1,7 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
-import { login, salvarToken } from "../../services/authService";
+import {
+    estaAutenticado,
+    getMe,
+    login,
+    obterToken,
+    removerToken,
+    salvarToken,
+} from "../../services/authService";
 import logo from "../../assets/logo.svg";
 import styles from "./Login.module.css";
 
@@ -126,11 +133,127 @@ function LoginContent({ onSubmit, onClose, showCloseButton = false, erro, loadin
     );
 }
 
+function LoggedInContent({
+    onLogout,
+    onClose,
+    showCloseButton = false,
+    userEmail,
+}: {
+    onLogout: () => void;
+    onClose?: () => void;
+    showCloseButton?: boolean;
+    userEmail?: string | null;
+}) {
+    const { theme, toggleTheme, mode } = useTheme();
+
+    return (
+        <>
+            <div
+                className={styles.brandPanel}
+                style={{
+                    background: `linear-gradient(160deg, ${theme.orange.main} 0%, ${theme.orange.secondary} 100%)`,
+                }}
+            >
+                <div className={styles.brandBadge}>
+                    <img src={logo} alt="Atlas" className={styles.brandLogo} />
+                </div>
+
+                <div className={styles.brandCopy}>
+                    <span className={styles.kicker}>Interface Ambiental</span>
+                    <h1>Você está conectado ao Atlas.</h1>
+                    <p>
+                        Acesse dashboard, relatórios e o histórico de chats com sua conta ativa.
+                    </p>
+                </div>
+            </div>
+
+            <div className={styles.formPanel}>
+                {showCloseButton && (
+                    <button
+                        type="button"
+                        className={styles.closeButton}
+                        onClick={onClose}
+                        aria-label="Fechar conta"
+                    >
+                        ×
+                    </button>
+                )}
+
+                <div className={styles.mobileBrand}>
+                    <img src={logo} alt="Atlas" className={styles.mobileLogo} />
+                </div>
+
+                <button
+                    type="button"
+                    className={styles.themeToggle}
+                    onClick={toggleTheme}
+                    aria-label="Alternar tema"
+                >
+                    {mode === "light" ? "Tema escuro" : "Tema claro"}
+                </button>
+
+                <div className={styles.formHeader}>
+                    <span className={styles.formEyebrow}>Sessão ativa</span>
+                    <h2>Sua conta</h2>
+                    <p>Você já está autenticado neste dispositivo.</p>
+                </div>
+
+                <div className={styles.form}>
+                    {userEmail && (
+                        <p className={styles.accountEmail}>{userEmail}</p>
+                    )}
+
+                    <button type="button" className={styles.logoutButton} onClick={onLogout}>
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+}
+
 export default function Login({ isModal = false, isOpen = true, onClose }: LoginProps) {
     const navigate = useNavigate();
     const { theme } = useTheme();
     const [erro, setErro] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(estaAutenticado);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
+
+    useEffect(() => {
+        const syncAuth = () => setIsLoggedIn(estaAutenticado());
+        window.addEventListener("authChanged", syncAuth);
+        return () => window.removeEventListener("authChanged", syncAuth);
+    }, []);
+
+    useEffect(() => {
+        if (!isLoggedIn || (isModal && !isOpen)) {
+            setUserEmail(null);
+            return;
+        }
+
+        const token = obterToken();
+        if (!token) {
+            return;
+        }
+
+        let cancelled = false;
+        getMe(token)
+            .then((usuario) => {
+                if (!cancelled) {
+                    setUserEmail(usuario.email);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setUserEmail(null);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isLoggedIn, isModal, isOpen]);
 
     useEffect(() => {
         if (!isModal) {
@@ -178,6 +301,13 @@ export default function Login({ isModal = false, isOpen = true, onClose }: Login
         }
     };
 
+    const handleLogout = () => {
+        removerToken();
+        setUserEmail(null);
+        onClose?.();
+        navigate("/chatbot");
+    };
+
     if (isModal && !isOpen) {
         return null;
     }
@@ -197,7 +327,22 @@ export default function Login({ isModal = false, isOpen = true, onClose }: Login
             {isModal ? (
                 <div className={styles.modalBackdrop}>
                     <section className={`${styles.shell} ${styles.modalShell}`} onClick={(event) => event.stopPropagation()}>
-                        <LoginContent onSubmit={handleSubmit} onClose={onClose} showCloseButton erro={erro} loading={loading} />
+                        {isLoggedIn ? (
+                            <LoggedInContent
+                                onLogout={handleLogout}
+                                onClose={onClose}
+                                showCloseButton
+                                userEmail={userEmail}
+                            />
+                        ) : (
+                            <LoginContent
+                                onSubmit={handleSubmit}
+                                onClose={onClose}
+                                showCloseButton
+                                erro={erro}
+                                loading={loading}
+                            />
+                        )}
                     </section>
                 </div>
             ) : (

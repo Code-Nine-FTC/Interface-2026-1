@@ -7,6 +7,7 @@ import { useTitle } from "../../../context/TitleContext";
 
 type NavbarProps = {
     pageTitle?: string;
+    isLoggedIn?: boolean;
     onLoginClick?: () => void;
     onMenuClick?: () => void;
     isMobileMenuOpen?: boolean;
@@ -14,6 +15,7 @@ type NavbarProps = {
 
 export default function Navbar({
     pageTitle,
+    isLoggedIn = false,
     onLoginClick,
     onMenuClick,
     isMobileMenuOpen = false,
@@ -133,7 +135,7 @@ export default function Navbar({
                             type="button"
                             className={styles.iconButton}
                             onClick={onLoginClick}
-                            aria-label="Abrir login"
+                            aria-label={isLoggedIn ? "Abrir conta" : "Abrir login"}
                         >
                             <UserIcon />
                         </button>
