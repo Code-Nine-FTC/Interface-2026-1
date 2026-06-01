@@ -187,7 +187,6 @@ export default function Chatbot() {
                     setChatIniciado(true);
                 })
                 .catch(() => {
-                    setMensagens([]);
                     setChatIniciado(true);
                 });
         } else {
@@ -235,12 +234,14 @@ export default function Chatbot() {
         try {
             const resposta: ChatMensagemResponseWithFallback = await enviarMensagemComFallback(textoParaEnviar, chatId, selectedMunicipioNome);
             
-            if (isNovoChat && resposta.chat_id) {
+            if (isNovoChat && resposta.chat_id && !resposta.eh_fallback) {
                 navigate(`/chatbot?chat_id=${resposta.chat_id}`, { replace: true });
                 window.dispatchEvent(new Event('chatUpdated'));
             }
 
-            setChatId(resposta.chat_id);
+            if (!resposta.eh_fallback) {
+                setChatId(resposta.chat_id);
+            }
 
             const mensagemBot: Mensagem = {
                 id: resposta.resposta_id,

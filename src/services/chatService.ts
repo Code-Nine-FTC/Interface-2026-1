@@ -1,4 +1,5 @@
 
+import { headersComAuth } from "./authService";
 
 export interface ChatMensagemRequest {
   pergunta: string;
@@ -89,9 +90,7 @@ export async function enviarMensagemChat(
   }
   const response = await fetch("http://127.0.0.1:5000/chat/mensagem", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headersComAuth(),
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -108,9 +107,7 @@ export async function feedbackChat(
 ): Promise<void> {
   const response = await fetch("http://127.0.0.1:5000/chat/feedback", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headersComAuth(),
     body: JSON.stringify({ resposta_sistema_id, avaliacao }),
   });
   if (!response.ok) {

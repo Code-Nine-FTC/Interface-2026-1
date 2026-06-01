@@ -59,3 +59,22 @@ export function removerToken(): void {
 export function estaAutenticado(): boolean {
   return !!obterToken();
 }
+
+/** Headers com Content-Type; inclui Bearer apenas se houver token. */
+export function headersComAuth(extra?: HeadersInit): HeadersInit {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(extra as Record<string, string>),
+  };
+  const token = obterToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+/** Headers de autenticação opcional (GET/DELETE sem body). */
+export function headersAuthSomente(): HeadersInit {
+  const token = obterToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
