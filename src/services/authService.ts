@@ -38,8 +38,13 @@ export async function getMe(token: string): Promise<UsuarioResponse> {
   return response.json();
 }
 
+function notificarMudancaAuth(): void {
+  window.dispatchEvent(new Event("authChanged"));
+}
+
 export function salvarToken(token: string): void {
   localStorage.setItem("atlas_token", token);
+  notificarMudancaAuth();
 }
 
 export function obterToken(): string | null {
@@ -48,6 +53,7 @@ export function obterToken(): string | null {
 
 export function removerToken(): void {
   localStorage.removeItem("atlas_token");
+  notificarMudancaAuth();
 }
 
 export function estaAutenticado(): boolean {

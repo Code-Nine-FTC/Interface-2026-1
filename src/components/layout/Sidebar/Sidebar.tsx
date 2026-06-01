@@ -6,6 +6,7 @@ import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
 import { useEffect, useRef, useState } from "react";
 import { buscarChats, excluirChat, ChatListItem } from "../../../services/chatListService";
+import { estaAutenticado } from "../../../services/authService";
 
 const MOBILE_BREAKPOINT = 900;
 
@@ -18,6 +19,7 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
     const { theme } = useTheme();
     const { isLoading } = useLoading();
 
+    const [isLoggedIn, setIsLoggedIn] = useState(estaAutenticado);
     const [chats, setChats] = useState<ChatListItem[]>([]);
     const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
     const [isMobileViewport, setIsMobileViewport] = useState(() =>
@@ -49,11 +51,21 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
     };
 
     useEffect(() => {
-        refreshChats();
+        const syncAuth = () => setIsLoggedIn(estaAutenticado());
+        window.addEventListener("authChanged", syncAuth);
+        return () => window.removeEventListener("authChanged", syncAuth);
+    }, []);
 
+    useEffect(() => {
+        if (!isLoggedIn) {
+            setChats([]);
+            return;
+        }
+
+        refreshChats();
         window.addEventListener("chatUpdated", refreshChats);
         return () => window.removeEventListener("chatUpdated", refreshChats);
-    }, []);
+    }, [isLoggedIn]);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
@@ -109,7 +121,7 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
             await excluirChat(chatId);
             setChats((prev) => prev.filter((c) => c.id !== chatId));
             if (currentChatId === chatId) {
-                navigate("/");
+                navigate("/chatbot");
             }
         } catch {
         }
@@ -171,11 +183,15 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
     const activeStyle = { color: theme.orange.secondary };
     const normalStyle = { color: theme.orange.main };
 
-    const menuItems = [
-        { to: "/", label: "Chatbot", icon: <ChatbotIcon />, disabled: false },
+    const allMenuItems = [
+        { to: "/chatbot", label: "Chatbot", icon: <ChatbotIcon />, disabled: false },
         { to: "/dashboard", label: "Dashboard", icon: <DashboardIcon />, disabled: false },
         { to: "/relatorio", label: "Relatorio", icon: <ReportIcon />, disabled: false },
     ];
+
+    const menuItems = isLoggedIn
+        ? allMenuItems
+        : allMenuItems.filter((item) => item.to === "/chatbot");
 
     return (
         <>
@@ -227,60 +243,62 @@ export default function Sidebar({ isMobileMenuOpen, onMobileMenuOpenChange }: Si
                         </NavLink>
                     ))}
 
-                    <div className={styles.chatsWrapper}>
-                        <hr className={styles.divider} />
+                    {isLoggedIn && (
+                        <div className={styles.chatsWrapper}>
+                            <hr className={styles.divider} />
 
-                        <span className={styles.historyTitle}>Historico de chats</span>
+                            <span className={styles.historyTitle}>Historico de chats</span>
 
-                        <div
-                            ref={chatsListRef}
-                            className={`${styles.chatsList} ${isDraggingChatsList ? styles.chatsListDragging : ""}`}
-                            onPointerDown={handleChatsListPointerDown}
-                            onPointerMove={handleChatsListPointerMove}
-                            onPointerUp={finishChatsListDrag}
-                            onPointerCancel={finishChatsListDrag}
-                        >
-                            {chats.length === 0 && (
-                                <div className={styles.chatsListEmpty}>Nenhum chat encontrado</div>
-                            )}
+                            <div
+                                ref={chatsListRef}
+                                className={`${styles.chatsList} ${isDraggingChatsList ? styles.chatsListDragging : ""}`}
+                                onPointerDown={handleChatsListPointerDown}
+                                onPointerMove={handleChatsListPointerMove}
+                                onPointerUp={finishChatsListDrag}
+                                onPointerCancel={finishChatsListDrag}
+                            >
+                                {chats.length === 0 && (
+                                    <div className={styles.chatsListEmpty}>Nenhum chat encontrado</div>
+                                )}
 
-                            {chats.map((chat) => (
-                                <button
-                                    key={chat.id}
-                                    className={`${styles.chatListItem} ${
-                                        currentChatId === chat.id ? styles.chatListItemActive : ""
-                                    }`}
-                                    onClick={() => {
-                                        if (suppressNextChatClickRef.current) {
-                                            suppressNextChatClickRef.current = false;
-                                            return;
-                                        }
+                                {chats.map((chat) => (
+                                    <button
+                                        key={chat.id}
+                                        className={`${styles.chatListItem} ${
+                                            currentChatId === chat.id ? styles.chatListItemActive : ""
+                                        }`}
+                                        onClick={() => {
+                                            if (suppressNextChatClickRef.current) {
+                                                suppressNextChatClickRef.current = false;
+                                                return;
+                                            }
 
-                                        navigate(`/chatbot?chat_id=${chat.id}&view=${Date.now()}`);
-                                        if (isMobileViewport) {
-                                            closeMobileMenu();
-                                        }
-                                    }}
-                                    onMouseEnter={() => setHoveredChatId(chat.id)}
-                                    onMouseLeave={() => setHoveredChatId(null)}
-                                    title={chat.title}
-                                >
-                                    <span className={styles.chatListItemText}>{chat.title}</span>
-                                    {(isMobileViewport ? currentChatId === chat.id : hoveredChatId === chat.id) && (
-                                        <span
-                                            className={styles.deleteBtn}
-                                            onClick={(e) => handleExcluirChat(e, chat.id)}
-                                            title="Excluir chat"
-                                            role="button"
-                                            aria-label="Excluir chat"
-                                        >
-                                            <TrashIcon />
-                                        </span>
-                                    )}
-                                </button>
-                            ))}
+                                            navigate(`/chatbot?chat_id=${chat.id}&view=${Date.now()}`);
+                                            if (isMobileViewport) {
+                                                closeMobileMenu();
+                                            }
+                                        }}
+                                        onMouseEnter={() => setHoveredChatId(chat.id)}
+                                        onMouseLeave={() => setHoveredChatId(null)}
+                                        title={chat.title}
+                                    >
+                                        <span className={styles.chatListItemText}>{chat.title}</span>
+                                        {(isMobileViewport ? currentChatId === chat.id : hoveredChatId === chat.id) && (
+                                            <span
+                                                className={styles.deleteBtn}
+                                                onClick={(e) => handleExcluirChat(e, chat.id)}
+                                                title="Excluir chat"
+                                                role="button"
+                                                aria-label="Excluir chat"
+                                            >
+                                                <TrashIcon />
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </nav>
             </aside>
         </>

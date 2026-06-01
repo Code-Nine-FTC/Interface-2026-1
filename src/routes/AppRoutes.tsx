@@ -3,6 +3,7 @@ import Layout from "../components/layout/Layout";
 import Report from "../pages/Report";
 import Chatbot from "../pages/Chatbot";
 import Dashboard from "../pages/Dashboard";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
     return (
@@ -12,8 +13,22 @@ export default function AppRoutes() {
                 <Route path="/login" element={<Navigate to="/chatbot" replace />} />
                 <Route element={<Layout />}>
                     <Route path="/chatbot" element={<Chatbot />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/relatorio" element={<Report />} />
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/relatorio"
+                        element={
+                            <ProtectedRoute>
+                                <Report />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Route>
             </Routes>
         </BrowserRouter>
