@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/env";
 import type { RegionData } from "../components/ui/RegionCard/types";
 
 export interface GeometriaSchema {
@@ -237,7 +238,7 @@ async function fetchJsonFromCandidates() {
 
     for (const endpoint of DASHBOARD_ENDPOINTS) {
         try {
-            const url = `http://127.0.0.1:5000${endpoint}`;
+            const url = `${API_BASE_URL}${endpoint}`;
             const response = await fetch(url, {
                 headers: {
                     Accept: "application/json",
@@ -263,7 +264,7 @@ async function fetchJsonFromEndpointCandidates(endpoints: string[]) {
 
     for (const endpoint of endpoints) {
         try {
-            const url = `http://127.0.0.1:5000${endpoint}`;
+            const url = `${API_BASE_URL}${endpoint}`;
             const response = await fetch(url, {
                 headers: {
                     Accept: "application/json",
@@ -360,7 +361,7 @@ function getRiskFromFireCount(fireCount: number): RegionData["risk"] {
 
 export async function fetchFullMunicipalityData(id: string | number): Promise<ResponseMunicipal | null> {
     try {
-        const url = `http://127.0.0.1:5000/municipal/${id}`;
+        const url = `${API_BASE_URL}/municipal/${id}`;
         const response = await fetch(url);
         if (!response.ok) return null;
         const json = await response.json();
@@ -504,7 +505,7 @@ export interface StateDashboardResponse {
 
 export async function fetchStateDashboard(state: string = "sp"): Promise<StateDashboardResponse | null> {
     try {
-        const url = `http://127.0.0.1:5000/dashboard/${state}`;
+        const url = `${API_BASE_URL}/dashboard/${state}`;
         const response = await fetch(url, {
             headers: {
                 Accept: "application/json",

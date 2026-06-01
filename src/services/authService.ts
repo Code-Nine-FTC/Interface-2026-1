@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:5000";
+import { API_BASE_URL } from "../config/env";
 
 export interface LoginResponse {
   access_token: string;
@@ -12,7 +12,7 @@ export interface UsuarioResponse {
 }
 
 export async function login(email: string, senha: string): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE}/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, senha }),
@@ -27,7 +27,7 @@ export async function login(email: string, senha: string): Promise<LoginResponse
 }
 
 export async function getMe(token: string): Promise<UsuarioResponse> {
-  const response = await fetch(`${API_BASE}/auth/me`, {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

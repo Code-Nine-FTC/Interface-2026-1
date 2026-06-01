@@ -1,6 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import styles from "./ChatMessage.module.css";
+import { API_BASE_URL } from "../../../config/env";
 import { FonteCitada, Mapa } from "../../../services/chatService";
 
 export interface Mensagem {
@@ -34,7 +35,7 @@ export default function ChatMessage({
     const [copiadoQgis, setCopiadoQgis] = React.useState(false);
 
     const copiarQgisUrl = () => {
-        const url = "http://localhost:5000/chat/resposta/" + msg.id + "/geojson";
+        const url = `${API_BASE_URL}/chat/resposta/${msg.id}/geojson`;
         navigator.clipboard.writeText(url).then(() => {
             setCopiadoQgis(true);
             setTimeout(() => setCopiadoQgis(false), 2000);

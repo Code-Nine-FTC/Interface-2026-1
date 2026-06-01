@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config/env";
 import { headersAuthSomente } from "./authService";
 
 export interface ChatListItem {
@@ -8,7 +9,7 @@ export interface ChatListItem {
     }
 
 export async function buscarChats(): Promise<ChatListItem[]> {
-  const response = await fetch("http://127.0.0.1:5000/chat/", {
+  const response = await fetch(`${API_BASE_URL}/chat/`, {
     headers: headersAuthSomente(),
   });
   if (!response.ok) {
@@ -18,7 +19,7 @@ export async function buscarChats(): Promise<ChatListItem[]> {
 }
 
 export async function excluirChat(chatId: string): Promise<void> {
-  const response = await fetch(`http://127.0.0.1:5000/chat/${chatId}`, {
+  const response = await fetch(`${API_BASE_URL}/chat/${chatId}`, {
     method: "DELETE",
     headers: headersAuthSomente(),
   });

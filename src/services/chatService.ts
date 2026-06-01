@@ -1,4 +1,4 @@
-
+import { API_BASE_URL } from "../config/env";
 import { headersComAuth } from "./authService";
 
 export interface ChatMensagemRequest {
@@ -88,7 +88,7 @@ export async function enviarMensagemChat(
   if (municipio) {
     body.municipio = municipio;
   }
-  const response = await fetch("http://127.0.0.1:5000/chat/mensagem", {
+  const response = await fetch(`${API_BASE_URL}/chat/mensagem`, {
     method: "POST",
     headers: headersComAuth(),
     body: JSON.stringify(body),
@@ -105,7 +105,7 @@ export async function feedbackChat(
   resposta_sistema_id: string,
   avaliacao: 1 | -1
 ): Promise<void> {
-  const response = await fetch("http://127.0.0.1:5000/chat/feedback", {
+  const response = await fetch(`${API_BASE_URL}/chat/feedback`, {
     method: "POST",
     headers: headersComAuth(),
     body: JSON.stringify({ resposta_sistema_id, avaliacao }),
