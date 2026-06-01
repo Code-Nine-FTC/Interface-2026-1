@@ -6,7 +6,7 @@ import ChatMessage, { Mensagem } from "../../components/ui/Chat/ChatMessage";
 import RecommendedQuestions from "../../components/ui/RecommendedQuestions/RecommendedQuestions";
 import styles from "./Chatbot.module.css";
 import logoAtlas from "../../assets/logo.svg";
-import { enviarMensagemChat, feedbackChat, ChatMensagemResponse, Mapa } from "../../services/chatService";
+import { enviarMensagemComFallback, feedbackChat, ChatMensagemResponseWithFallback, Mapa } from "../../services/chatService";
 import { useLocation, useNavigate } from "react-router-dom";
 import { buscarHistoricoChat } from "../../services/chatHistoricoService";
 import { useTitle } from "../../context/TitleContext";
@@ -163,7 +163,7 @@ export default function Chatbot() {
 
                         const primeira = msgs.find(m => m.tipo === "usuario");
                         if (primeira?.texto) {
-                            setTitle(primeira.texto.slice(0, 40));
+                            setTitle(primeira.texto.replace(/\s+/g, " ").trim());
                         } else {
                             setTitle("Chat");
                         }
@@ -233,7 +233,7 @@ export default function Chatbot() {
         setDigitando(true);
 
         try {
-            const resposta: ChatMensagemResponse = await enviarMensagemChat(textoParaEnviar, chatId, selectedMunicipioNome);
+            const resposta: ChatMensagemResponseWithFallback = await enviarMensagemComFallback(textoParaEnviar, chatId, selectedMunicipioNome);
             
             if (isNovoChat && resposta.chat_id) {
                 navigate(`/chatbot?chat_id=${resposta.chat_id}`, { replace: true });
@@ -241,14 +241,17 @@ export default function Chatbot() {
             }
 
             setChatId(resposta.chat_id);
-            
+
             const mensagemBot: Mensagem = {
                 id: resposta.resposta_id,
                 texto: resposta.texto_resposta,
                 tipo: "bot",
                 autor: "Atlas",
                 fontes: resposta.fontes_citadas,
-                mapa: resposta.mapa
+                mapa: resposta.mapa,
+                eh_fallback: !!resposta.eh_fallback,
+                tipo_fallback: resposta.tipo_fallback || undefined,
+                sugestoes: resposta.fallback_info?.sugestoes || undefined
             };
 
             setMensagens(prev => [...prev, mensagemBot]);
@@ -267,7 +270,10 @@ export default function Chatbot() {
                 id: Date.now().toString(),
                 texto: "Erro ao consultar o backend. Tente novamente.",
                 tipo: "bot",
-                autor: "Atlas"
+                autor: "Atlas",
+                eh_fallback: true,
+                tipo_fallback: "connection_fallback",
+                sugestoes: []
             }]);
             setDigitando(false);
         }
@@ -322,6 +328,7 @@ export default function Chatbot() {
                                 feedbackDoHistorico={feedbackDoHistorico}
                                 feedbackEnviado={feedbackEnviado}
                                 onFeedback={handleFeedback}
+                                onSelectSugestao={(s) => handleEnviarMensagem(s)}
                             />
                         ))}
 

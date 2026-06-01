@@ -1,24 +1,102 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Navbar.module.css";
 import { useTheme } from "../../../context/ThemeContext";
 import { useLoading } from "../../../context/LoadingContext";
 import Skeleton from "../../ui/SkeletonAnimation/Skeleton";
 import { useTitle } from "../../../context/TitleContext";
+import {
+    AUTH_CHANGED_EVENT,
+    AUTH_TOKEN_KEY,
+    getMe,
+    obterToken,
+    removerToken,
+    usuarioEhAdmin,
+} from "../../../services/authService";
+import { dispararAtualizacaoManual } from "../../../services/adminService";
 
 type NavbarProps = {
     pageTitle?: string;
+    onLoginClick?: () => void;
+    onMenuClick?: () => void;
+    isMobileMenuOpen?: boolean;
 };
 
-export default function Navbar({ pageTitle }: NavbarProps) {
+export default function Navbar({
+    pageTitle,
+    onLoginClick,
+    onMenuClick,
+    isMobileMenuOpen = false,
+}: NavbarProps) {
     const { theme, toggleTheme, mode } = useTheme();
     const { isLoading } = useLoading();
 
     const [isSpinning, setIsSpinning] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadAdminStatus = async () => {
+            const token = obterToken();
+
+            if (!token) {
+                if (isMounted) setIsAdmin(false);
+                return;
+            }
+
+            try {
+                const usuario = await getMe(token);
+                if (isMounted) {
+                    setIsAdmin(usuarioEhAdmin(usuario, token));
+                }
+            } catch {
+                if (isMounted) setIsAdmin(false);
+                removerToken();
+            }
+        };
+
+        const handleAuthChanged = () => {
+            void loadAdminStatus();
+        };
+
+        const handleStorageChanged = (event: StorageEvent) => {
+            if (event.key === AUTH_TOKEN_KEY) {
+                void loadAdminStatus();
+            }
+        };
+
+        void loadAdminStatus();
+        window.addEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+        window.addEventListener("storage", handleStorageChanged);
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener(AUTH_CHANGED_EVENT, handleAuthChanged);
+            window.removeEventListener("storage", handleStorageChanged);
+        };
+    }, []);
 
     const handleToggleTheme = () => {
         setIsSpinning(true);
         toggleTheme();
         setTimeout(() => setIsSpinning(false), 600);
+    };
+
+    const handleManualUpdate = async () => {
+        if (isUpdating) return;
+
+        setIsUpdating(true);
+
+        try {
+            const response = await dispararAtualizacaoManual();
+            window.alert(`${response.message}\nTask ID: ${response.task_id}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao iniciar atualizacao.";
+            window.alert(message);
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     const SunLightIcon = () => (
@@ -69,14 +147,32 @@ export default function Navbar({ pageTitle }: NavbarProps) {
         </svg>
     );
 
-    const LangIcon = () => (
+    const UserIcon = () => (
         <svg width="24" height="24" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.75 14L19.25 24.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M7 24.5L17.5 14L21 8.75" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M3.5 8.75H24.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12.25 3.5H14" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M38.5 38.5L29.75 21L21 38.5" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M24.5 31.5H35" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="21" cy="15.75" r="6.75" stroke="currentColor" strokeWidth="4" />
+            <path d="M9 35C9 28.3726 14.3726 23 21 23C27.6274 23 33 28.3726 33 35" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+
+    const RefreshCcwDotIcon = ({ className = "" }: { className?: string }) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+            aria-hidden="true"
+        >
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 16h5v5" />
+            <circle cx="12" cy="12" r="1" />
         </svg>
     );
 
@@ -91,27 +187,64 @@ export default function Navbar({ pageTitle }: NavbarProps) {
             }}
         >
             <div className={styles.navbar}>
-                <Skeleton isLoading={isLoading} variant="rectangular">
-                    <h1
-                        style={{
-                            color: theme.orange?.main || "orange",
-                            fontSize: theme.font?.size?.lg,
-                        }}
+                <div className={styles.titleArea}>
+                    <button
+                        type="button"
+                        className={styles.menuButton}
+                        onClick={onMenuClick}
+                        aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+                        aria-expanded={isMobileMenuOpen}
+                        aria-controls="app-sidebar"
                     >
-                        {title || pageTitle || "Chatbot"}
-                    </h1>
-                </Skeleton>
+                        <HamburgerIcon isOpen={isMobileMenuOpen} />
+                    </button>
+
+                    <Skeleton isLoading={isLoading} variant="rectangular" fullWidth>
+                        <h1
+                            className={styles.pageTitle}
+                            style={{
+                                color: theme.orange?.main || "orange",
+                                fontSize: theme.font?.size?.lg,
+                            }}
+                        >
+                            {title || pageTitle || "Chatbot"}
+                        </h1>
+                    </Skeleton>
+                </div>
 
                 <div
                     className={styles.actions}
                     style={{ color: theme.orange?.main || "orange" }}
                 >
+                    {isAdmin && (
+                        <Skeleton isLoading={isLoading} variant="rectangular">
+                            <button
+                                type="button"
+                                className={styles.iconButton}
+                                onClick={handleManualUpdate}
+                                disabled={isUpdating}
+                                aria-label="Atualizar base de dados"
+                                aria-busy={isUpdating}
+                                title="Atualizar base de dados"
+                            >
+                                <RefreshCcwDotIcon className={isUpdating ? styles.spin : ""} />
+                            </button>
+                        </Skeleton>
+                    )}
+
                     <Skeleton isLoading={isLoading} variant="rectangular">
                         {mode === "light" ? <SunLightIcon /> : <SunDimIcon />}
                     </Skeleton>
 
                     <Skeleton isLoading={isLoading} variant="rectangular">
-                        <LangIcon />
+                        <button
+                            type="button"
+                            className={styles.iconButton}
+                            onClick={onLoginClick}
+                            aria-label="Abrir login"
+                        >
+                            <UserIcon />
+                        </button>
                     </Skeleton>
                 </div>
             </div>
@@ -123,3 +256,20 @@ export default function Navbar({ pageTitle }: NavbarProps) {
         </header>
     );
 }
+
+const HamburgerIcon = ({ isOpen }: { isOpen: boolean }) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        {isOpen ? (
+            <>
+                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </>
+        ) : (
+            <>
+                <path d="M4 7H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M4 12H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M4 17H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </>
+        )}
+    </svg>
+);

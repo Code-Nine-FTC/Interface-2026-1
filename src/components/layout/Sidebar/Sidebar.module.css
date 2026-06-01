@@ -1,8 +1,11 @@
 .sidebar {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     width: clamp(260px, 22vw, 340px);
     height: 100vh;
+    max-height: 100vh;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     padding: 1.4rem 1rem;
@@ -10,6 +13,17 @@
     background-color: var(--background-secondary);
     color: var(--text-primary);
     font-family: var(--font-family);
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.mobileBackdrop {
+    display: none;
+}
+
+.mobileBackdropVisible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .logoContainer {
@@ -25,6 +39,9 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .link {
@@ -59,12 +76,41 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    max-height: 44vh;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    background: var(--background-secondary);
+    scrollbar-width: thin;
+    scrollbar-color: var(--orange-main) var(--background-secondary);
+}
+
+.chatsListDragging {
+    cursor: grabbing;
+    user-select: none;
+}
+
+.chatsList::-webkit-scrollbar {
+    width: 10px;
+}
+
+.chatsList::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+}
+
+.chatsList::-webkit-scrollbar-thumb {
+    background: var(--orange-main);
+    border-radius: 10px;
+    border: 2px solid var(--background-secondary);
+}
+
+.chatsList::-webkit-scrollbar-thumb:hover {
+    background: var(--orange-main);
 }
 
 .chatsListTitle {
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-xs);
     font-weight: 600;
     color: var(--text-secondary);
     margin-bottom: 0.1rem;
@@ -74,7 +120,6 @@
     font-size: var(--font-size-sm);
     color: var(--text-light);
 }
-
 
 @media (max-width: 1200px) {
     .sidebar {
@@ -88,32 +133,27 @@
     }
 }
 
-@media (max-width: 900px) {
-    .sidebar {
-        width: clamp(210px, 32vw, 270px);
-        padding: 1rem 0.8rem;
-    }
-
-    .chatsList {
-        max-height: 30vh;
-        padding: 0.75rem;
-    }
-
-    .chatsListTitle {
-        font-size: var(--font-size-sm);
-    }
-
-    .chatListItem {
-        font-size: var(--font-size-sm);
-        min-height: 44px;
-    }
-}
-
 .chatsWrapper {
     margin-top: 0.8rem;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    background: var(--background-secondary);
+}
+
+.chatsWrapper::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 95%;
+    height: 25px;
+    background: linear-gradient(to bottom, transparent, var(--background-secondary));
+    pointer-events: none;
 }
 
 .divider {
@@ -141,7 +181,7 @@
     text-align: left;
     padding: 0.6rem 0.7rem;
     font-family: var(--font-family);
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -176,8 +216,59 @@
     transition: color 0.2s ease, background 0.2s ease;
 }
 
-
 .deleteBtn:hover {
     color: var(--orange-secondary);
     border-radius: 4px;
+}
+
+@media (max-width: 900px) {
+    .mobileBackdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.42);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+        z-index: 1190;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(88vw, 340px);
+        height: 100dvh;
+        max-height: 100dvh;
+        padding: 0.95rem 0.85rem;
+        transform: translateX(-108%);
+        transition: transform 0.24s ease;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+        z-index: 1200;
+    }
+
+    .sidebar.sidebarOpen {
+        transform: translateX(0);
+    }
+
+    .chatsWrapper {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .chatsList {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+        cursor: grab;
+        padding: 0.75rem 0.35rem 0.75rem 0;
+    }
+
+    .chatListItem {
+        font-size: var(--font-size-sm);
+        min-height: 44px;
+    }
 }
