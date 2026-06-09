@@ -12,7 +12,8 @@ import {
     removerToken,
     usuarioEhAdmin,
 } from "../../../services/authService";
-import { dispararAtualizacaoManual, obterStatusEtl } from "../../../services/adminService";
+import { dispararAtualizacaoManual } from "../../../services/adminService";
+import { useEtlWebSocket, type EtlWsMessage } from "../../../services/useEtlWebSocket";
 
 type NavbarProps = {
     pageTitle?: string;
@@ -41,36 +42,36 @@ export default function Navbar({
     const [etlStatusText, setEtlStatusText] = useState<string | null>(null);
     const [notificacao, setNotificacao] = useState<{ mensagem: string; tipo: "sucesso" | "erro" } | null>(null);
 
-    // Função para checar o status atual do banco de dados (Sincronizada com o Python)
-    const checarStatusAtual = useCallback(async () => {
-        const token = obterToken();
-        if (!token || !isAdmin) return;
+    // Callback estável chamado pelo WebSocket quando o servidor envia uma mensagem
+    const handleEtlMessage = useCallback((msg: EtlWsMessage) => {
+        const statusDoServidor = msg.status_atual?.toLowerCase() ?? "";
 
-        try {
-            const resposta = await obterStatusEtl();
-            
-            // Tratamos a string em minúsculo para evitar incompatibilidade ("RUNNING" vs "running")
-            const statusDoServidor = resposta?.data?.status_atual?.toLowerCase() || "";
-
-            if (statusDoServidor === "running" || statusDoServidor === "em_processamento") {
-                setIsUpdating(true);
-                setEtlStatusText("Processando ETL...");
-            } else if (statusDoServidor === "completed" || statusDoServidor === "sucesso") {
-                setIsUpdating(false);
-                setEtlStatusText("Atualização concluída!");
-                setTimeout(() => setEtlStatusText(null), 5000);
-            } else if (statusDoServidor === "failed" || statusDoServidor === "erro") {
-                setIsUpdating(false);
-                setEtlStatusText("Falha na última sincronização.");
-                setTimeout(() => setEtlStatusText(null), 5000);
-            } else {
-                setIsUpdating(false);
-                setEtlStatusText(null);
-            }
-        } catch (err) {
-            console.error("Erro ao checar status do ETL:", err);
+        if (statusDoServidor === "running" || statusDoServidor === "em_processamento") {
+            setIsUpdating(true);
+            setEtlStatusText("Processando ETL...");
+        } else if (statusDoServidor === "completed" || statusDoServidor === "sucesso") {
+            setIsUpdating(false);
+            setEtlStatusText("Atualização concluída!");
+            setTimeout(() => setEtlStatusText(null), 5000);
+        } else if (statusDoServidor === "failed" || statusDoServidor === "erro") {
+            setIsUpdating(false);
+            setEtlStatusText("Falha na última sincronização.");
+            setTimeout(() => setEtlStatusText(null), 5000);
+        } else {
+            setIsUpdating(false);
+            setEtlStatusText(null);
         }
-    }, [isAdmin]);
+    }, []);
+
+    // WebSocket de status do ETL
+    useEtlWebSocket({
+        enabled: isAdmin,
+        onMessage: handleEtlMessage,
+        onAuthError: () => {
+            setIsAdmin(false);
+            removerToken();
+        },
+    });
 
     // Inicialização do estado de administrador
     useEffect(() => {
@@ -110,24 +111,6 @@ export default function Navbar({
             window.removeEventListener("storage", handleStorageChanged);
         };
     }, []);
-
-    // Polling ativo: Fica perguntando ao banco a cada 5 segundos enquanto estiver rodando
-    useEffect(() => {
-        if (!isUpdating || !isAdmin) return;
-
-        const interval = setInterval(() => {
-            void checarStatusAtual();
-        }, 60000);
-
-        return () => clearInterval(interval);
-    }, [isUpdating, isAdmin, checarStatusAtual]);
-
-    // Primeira checagem proativa assim que o usuário é validado como admin
-    useEffect(() => {
-        if (isAdmin) {
-            void checarStatusAtual();
-        }
-    }, [isAdmin, checarStatusAtual]);
 
     const handleToggleTheme = () => {
         setIsSpinning(true);
