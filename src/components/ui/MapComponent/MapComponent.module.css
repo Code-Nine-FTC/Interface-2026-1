@@ -107,3 +107,100 @@
   border-left-color: var(--background-primary);
   border-right-color: var(--background-primary);
 }
+
+.mapContainer :global(.atlas-popup) {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.mapContainer :global(.atlas-popup-title) {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--orange-main);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--shared-hr);
+}
+
+.mapContainer :global(.atlas-popup-row) {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.mapContainer :global(.atlas-popup-label) {
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mapContainer :global(.atlas-popup-value) {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+}
+
+.mapLegend {
+  position: absolute;
+  bottom: 28px;
+  right: 10px;
+  z-index: 1000;
+  background: var(--background-primary, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  padding: 12px 14px;
+  min-width: 180px;
+  max-width: 240px;
+  pointer-events: none;
+}
+
+.legendTitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.legendSwatch {
+  display: inline-block;
+  width: 16px;
+  height: 12px;
+  border-radius: 3px;
+  border: 2px solid currentColor;
+  flex-shrink: 0;
+}
+
+.legendDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  color: var(--text-primary, #333);
+  line-height: 1.3;
+}
