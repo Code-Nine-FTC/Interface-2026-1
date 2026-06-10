@@ -59,6 +59,7 @@ const STYLE_BY_TIPO: Record<string, L.PathOptions> = {
   ranking_criticidade: { color: '#7b0000', weight: 2, fillColor: '#c0392b', fillOpacity: 0.25 },
   densidade_volumetrica: { color: '#1a1a2e', weight: 1.5, fillColor: '#8d99ae', fillOpacity: 0.25 },
   sobreposicao_ti_uc: { color: '#003566', weight: 2.5, fillColor: '#0077b6', fillOpacity: 0.3 },
+  area_no_municipio: { color: '#3d348b', weight: 2, fillColor: '#7678ed', fillOpacity: 0.35 },
   queimada: { color: '#d00000', weight: 1, fillColor: '#e63946', fillOpacity: 0.85 },
   queimada_evento_relacionada: { color: '#d00000', weight: 1, fillColor: '#e63946', fillOpacity: 0.85 },
   queimada_em_quilombola: { color: '#7a0000', weight: 1.5, fillColor: '#ff4d6d', fillOpacity: 0.9 },
@@ -82,9 +83,10 @@ const LEGEND_LABELS: Record<string, string> = {
   desmatamento: 'Alerta de desmatamento',
   assentamento_rural: 'Assentamento rural',
   camada_estadual_ambiental: 'Camada estadual',
-  ranking_criticidade: 'Ranking de criticidade',
-  densidade_volumetrica: 'Densidade volumétrica',
+  ranking_criticidade: 'Ranking municipal',
+  densidade_volumetrica: 'Ranking municipal',
   sobreposicao_ti_uc: 'Sobreposição TI + UC',
+  area_no_municipio: 'Área no município',
 };
 
 const POINT_TIPOS = new Set([
@@ -381,6 +383,13 @@ function bindFeaturePopup(feature: any, layer: L.Layer, scoresPorImovel = new Ma
       if (numTi !== null) linhas.push(linhaPopup('Terras Indígenas', formatNum(numTi, 0)));
       if (numUc !== null) linhas.push(linhaPopup('Unidades de Conservação', formatNum(numUc, 0)));
       if (properties.analise) linhas.push(linhaPopup('Análise', properties.analise));
+      break;
+    }
+    case 'area_no_municipio': {
+      titulo = String(properties.nome ?? 'Área no município');
+      if (properties.municipio) linhas.push(linhaPopup('Município', properties.municipio));
+      if (typeof properties.area_ha === 'number') linhas.push(linhaPopup('Área', `${formatNum(properties.area_ha, 2)} ha`));
+      if (typeof properties.percentual_no_municipio === 'number') linhas.push(linhaPopup('% no município', `${formatNum(properties.percentual_no_municipio, 1)} %`));
       break;
     }
     case 'ranking_criticidade':
